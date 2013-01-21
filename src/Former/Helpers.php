@@ -6,35 +6,13 @@
  */
 namespace Former;
 
-use \Illuminate\Container\Container;
-use \Illuminate\Database\Eloquent\Collection;
-use \Illuminate\Translation\Translator;
-use \Underscore\Types\String;
+use \HTML;
+use \Lang;
 
 class Helpers
 {
   /**
-   * Instance of the container
-   * @var Container
-   */
-  private static $app;
-
-  /**
-   * Bind a Container to the Helpers class
-   *
-   * @param Container $app
-   */
-  public static function setApp(Container $app)
-  {
-    static::$app = $app;
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  /////////////////////////// HTML HELPERS ///////////////////////////
-  ////////////////////////////////////////////////////////////////////
-
-  /**
-   * Add a class to an attributes array
+   * Adds a class to an attributes array
    *
    * @param  array  $attributes An array of attributes
    * @param  string $class      The class to add
@@ -45,16 +23,12 @@ class Helpers
     if (!isset($attributes['class'])) $attributes['class'] = null;
 
     // Prevent adding a class twice
-    if (!String::contains($attributes['class'], $class)) {
+    if (!str_contains($attributes['class'], $class)) {
       $attributes['class'] = trim($attributes['class']. ' ' .$class);
     }
 
     return $attributes;
   }
-
-  ////////////////////////////////////////////////////////////////////
-  ///////////////////////// LOCALIZATION HELPERS /////////////////////
-  ////////////////////////////////////////////////////////////////////
 
   /**
    * Translates a string by trying several fallbacks
@@ -72,35 +46,26 @@ class Helpers
     if(!$fallback) $fallback = $key;
 
     // Assure we don't already have a Lang object
-    if($key instanceof Translator) return $key->get();
-
-    $translator    = static::$app['translator'];
-    $translation   = null;
-    $translateFrom = static::$app['former']->getOption('translate_from').'.'.$key;
+    if($key instanceof Lang) return $key->get();
 
     // Search for the key itself
-    if ($translator->has($key)) {
-      $translation = $translator->get($key);
-    } elseif ($translator->has($translateFrom)) {
-      $translation  = $translator->get($translateFrom);
-    }
+    $translation = Lang::line($key)->get(null, '');
 
-    // Replace by fallback if invalid
-    if (!$translation or is_array($translation)) {
-      $translation = $fallback;
-    }
+    // If not found, search in the field attributes
+    if(!$translation) $translation =
+      Lang::line(Config::get('translate_from').'.'.$key)->get(null,
+      $fallback);
+
+    // If we were returned a translations array
+    if (is_array($translation)) $translation = $fallback;
 
     return ucfirst($translation);
   }
 
-  ////////////////////////////////////////////////////////////////////
-  ////////////////////////// DATABASE HELPERS ////////////////////////
-  ////////////////////////////////////////////////////////////////////
-
   /**
-   * Transforms an array of models into an associative array
+   * Transforms a Fluent/Eloquent query to an array
    *
-   * @param  object $query The array of results
+   * @param  object $query The query
    * @param  string $value The attribute to use as value
    * @param  string $key   The attribute to use as key
    * @return array         A data array
@@ -108,9 +73,15 @@ class Helpers
   public static function queryToArray($query, $value, $key)
   {
     // Automatically fetch Lang objects for people who store translated options lists
-    // Same of unfetched queries
-    if (method_exists($query, 'get')) $query = $query->get();
-    if ($query instanceof Collection) $query = $query->toArray();
+    if ($query instanceof \Laravel\Lang) {
+      $query = $query->get();
+    }
+
+    // Fetch the Query if it hasn't been
+    if ($query instanceof \Laravel\Database\Eloquent\Query or
+       $query instanceof \Laravel\Database\Query) {
+      $query = $query->get();
+    }
 
     if(!is_array($query)) $query = (array) $query;
 
@@ -127,7 +98,7 @@ class Helpers
 
       // Calculate the key
       if($key and isset($model->$key)) $modelKey = $model->$key;
-      elseif(method_exists($model, 'getKey')) $modelKey = $model->getKey();
+      elseif(method_exists($model, 'get_key')) $modelKey = $model->get_key();
       elseif(isset($model->id)) $modelKey = $model->id;
       else $modelKey = $modelValue;
 
@@ -138,5 +109,26 @@ class Helpers
     }
 
     return isset($array) ? $array : $query;
+  }
+
+  public static function renderLabel($label, $field)
+  {
+    // Get the label and its informations
+    extract($label);
+
+    // Add classes to the attributes
+    $attributes = Framework::getLabelClasses($attributes);
+
+    // Append required text
+    if ($field->isRequired()) {
+      $label .= Config::get('required_text');
+    }
+
+    // Get the field name to link the label to it
+    if ($field->isCheckable()) {
+      return '<label'.HTML::attributes($attributes).'>'.$label.'</label>';
+    }
+
+    return \Form::label($field->name, $label, $attributes);
   }
 }

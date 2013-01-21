@@ -2,31 +2,17 @@
 /**
  * FormerObject
  *
- * Base Former object that allows chained attributes setting, adding
- * classes to the existing ones, and provide types helpers
+ * Base Former object that allows chained attributes setting
  */
 namespace Former\Traits;
-
-use \Former\Helpers;
-use \Underscore\Types\Arrays;
 
 abstract class FormerObject
 {
   /**
-   * The FormerObject's attribute
+   * The Form open tag's attribute
    * @var array
    */
   protected $attributes = array();
-
-  /**
-   * The field value
-   * @var string
-   */
-  protected $value;
-
-  ////////////////////////////////////////////////////////////////////
-  /////////////////////////// CORE METHODS ///////////////////////////
-  ////////////////////////////////////////////////////////////////////
 
   /**
    * Dynamically set attributes
@@ -40,61 +26,23 @@ abstract class FormerObject
     $method = str_replace('_', '-', $method);
 
     // Get value and set it
-    $value = Arrays::get($parameters, 0, 'true');
+    $value = array_get($parameters, 0, 'true');
     $this->setAttribute($method, $value);
 
     return $this;
   }
 
   /**
-   * Get a private attribute or a field attribute
+   * Get a Field variable or an attribute
    *
    * @param  string $attribute The desired attribute
-   *
    * @return string            Its value
    */
   public function __get($attribute)
   {
-    return Arrays::get($this->attributes, $attribute);
+    if(isset($this->$attribute)) return $this->$attribute;
+    else return array_get($this->attributes, $attribute);
   }
-
-  ////////////////////////////////////////////////////////////////////
-  ////////////////////////////// GETTERS /////////////////////////////
-  ////////////////////////////////////////////////////////////////////
-
-  /**
-   * Get the object's name
-   *
-   * @return string
-   */
-  public function getName()
-  {
-    return $this->name;
-  }
-
-  /**
-   * Get the object's value
-   *
-   * @return mixed
-   */
-  public function getValue()
-  {
-    return $this->value;
-  }
-
-  /**
-   * Get all of the Object's attributes
-   *
-   * @return array
-   */
-  public function getAttributes()
-  {
-    return $this->attributes;
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  //////////////////////////// ATTRIBUTES ////////////////////////////
-  ////////////////////////////////////////////////////////////////////
 
   /**
    * Set an attribute
@@ -112,37 +60,22 @@ abstract class FormerObject
   /**
    * Set a bunch of parameters at once
    *
-   * @param array $attributes The attributes to add to the existing ones
-   *
-   * @return FormerObject
+   * @param array   $attributes An associative array of attributes
+   * @param boolean $merge      Whether they should be merged to the old ones
    */
-  public function setAttributes($attributes)
+  public function setAttributes($attributes, $merge = true)
   {
-    $this->attributes = array_merge($this->attributes, (array) $attributes);
+    $attributes = (array) $attributes;
+
+    $this->attributes = $merge
+      ? array_merge($this->attributes, $attributes)
+      : $attributes;
 
     return $this;
   }
 
   /**
-   * Replace all attributes with the provided array
-   *
-   * @param array $attributes The attributes to replace with
-   *
-   * @return FormerObject
-   */
-  public function replaceAttributes($attributes)
-  {
-    $this->attributes = (array) $attributes;
-
-    return $this;
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  ////////////////////////// OBJECT CLASSES //////////////////////////
-  ////////////////////////////////////////////////////////////////////
-
-  /**
-   * Add one or more classes to the current field
+   * Add a class to the current field
    *
    * @param string $class The class to add
    */
@@ -150,45 +83,9 @@ abstract class FormerObject
   {
     if(is_array($class)) $class = implode(' ', $class);
 
-    $this->attributes = Helpers::addClass($this->attributes, $class);
+    $this->attributes = \Former\Helpers::addClass($this->attributes, $class);
 
     return $this;
   }
 
-  ////////////////////////////////////////////////////////////////////
-  //////////////////////////// OBJECT TYPE ///////////////////////////
-  ////////////////////////////////////////////////////////////////////
-
-  /**
-   * Get the object's type
-   *
-   * @return string
-   */
-  public function getType()
-  {
-    return $this->type;
-  }
-
-  /**
-   * Change a object's type
-   *
-   * @param string $type
-   */
-  public function setType($type)
-  {
-    $this->type = $type;
-  }
-
-  /**
-   * Check if an object is of a certain type
-   *
-   * @param  string $types* The type(s) to check for
-   * @return boolean
-   */
-  public function isOfType()
-  {
-    $types = func_get_args();
-
-    return in_array($this->type, $types);
-  }
 }

@@ -1,39 +1,15 @@
 {
-  "name": "anahkiasen/former",
-  "description": "A powerful form builder for the Laravel framework",
-  "license": "MIT",
-  "keywords": [
-    "bootstrap",
-    "form",
-    "foundation",
-    "laravel"
-  ],
-  "authors": [
-    {
-      "name": "Maxime Fabre",
-      "email": "ehtnam6@gmail.com"
+    "name": "anahkiasen/former",
+    "description": "A powerful form builder for the Laravel framework",
+    "authors": [
+        {
+            "name": "Maxime Fabre",
+            "email": "ehtnam6@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "Former": "libraries/"
+        }
     }
-  ],
-  "require": {
-    "anahkiasen/underscore-php": "dev-master",
-    "illuminate/config": "dev-master",
-    "illuminate/container": "dev-master",
-    "illuminate/translation" :"dev-master",
-    "meido/form": "dev-master",
-    "meido/html": "1.1.*"
-  },
-  "require-dev": {
-    "mockery/mockery": "dev-master"
-  },
-  "autoload": {
-    "psr-0": {
-      "Former": "src",
-      "Laravel": "src",
-      "Meido": "src"
-    }
-  },
-  "minimum-stability": "dev",
-  "branch-alias": {
-    "dev-composer": "dev-agnostic"
-  }
 }

@@ -1,8 +1,0 @@
-!phpunit.xml
-*.sublime-project
-*.sublime-workspace
-composer.lock
-composer.phar
-php-cs-fixer.phar
-phpunit.phar
-tests/logs
