@@ -13,7 +13,6 @@ return array(
     'Symfony\\Component\\HttpFoundation\\' => $vendorDir . '/symfony/http-foundation/',
     'Symfony\\Component\\EventDispatcher\\' => $vendorDir . '/symfony/event-dispatcher/',
     'Psr\\Log\\' => $vendorDir . '/psr/log/',
-    'Mockery' => $vendorDir . '/mockery/mockery/library/',
     'Meido\\HTML' => $vendorDir . '/meido/html/src/',
     'Meido\\Form' => $vendorDir . '/meido/form/src/',
     'Meido' => $baseDir . '/src',
