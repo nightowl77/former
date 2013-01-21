@@ -1,3 +1,6 @@
 [submodule "vendor/anahkiasen/underscore-php"]
 	path = vendor/anahkiasen/underscore-php
 	url = https://github.com/Anahkiasen/underscore-php
+[submodule "vendor/meido/form"]
+	path = vendor/meido/form
+	url = git://github.com/meido/form.git
