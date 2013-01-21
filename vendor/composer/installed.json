@@ -1,5 +1,101 @@
 [
     {
+        "name": "anahkiasen/underscore-php",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "git://github.com/Anahkiasen/underscore-php.git",
+            "reference": "2d9f4263984f7c3105b5024125de9aae5f996255"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://github.com/Anahkiasen/underscore-php/archive/2d9f4263984f7c3105b5024125de9aae5f996255.zip",
+            "reference": "2d9f4263984f7c3105b5024125de9aae5f996255",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "time": "2013-01-18 09:15:16",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "Underscore": "src/",
+                "Laravel": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Maxime Fabre",
+                "email": "ehtnam6@gmail.com"
+            }
+        ],
+        "description": "A redacted port of Underscore.js for PHP"
+    },
+    {
+        "name": "symfony/translation",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "target-dir": "Symfony/Component/Translation",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/Translation",
+            "reference": "54a5fe0f22d740af6e29ae709134873a09643e4c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://github.com/symfony/Translation/archive/54a5fe0f22d740af6e29ae709134873a09643e4c.zip",
+            "reference": "54a5fe0f22d740af6e29ae709134873a09643e4c",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.3"
+        },
+        "require-dev": {
+            "symfony/config": "2.2.*",
+            "symfony/yaml": "2.2.*"
+        },
+        "suggest": {
+            "symfony/config": "2.2.*",
+            "symfony/yaml": "2.2.*"
+        },
+        "time": "2013-01-17 15:25:59",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.2-dev"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "Symfony\\Component\\Translation\\": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "http://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony Translation Component",
+        "homepage": "http://symfony.com"
+    },
+    {
         "name": "psr/log",
         "version": "1.0.0",
         "version_normalized": "1.0.0.0",
@@ -37,88 +133,6 @@
             "log",
             "psr",
             "psr-3"
-        ]
-    },
-    {
-        "name": "meido/html",
-        "version": "v1.1.0",
-        "version_normalized": "1.1.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/meido/html",
-            "reference": "v1.1.0"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://github.com/meido/html/archive/v1.1.0.zip",
-            "reference": "v1.1.0",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0",
-            "illuminate/routing": "4.0.x",
-            "illuminate/support": "4.0.x"
-        },
-        "require-dev": {
-            "mockery/mockery": "0.7.2"
-        },
-        "time": "2013-01-13 13:12:11",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Meido\\HTML": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "authors": [
-            {
-                "name": "Joni Chandra",
-                "email": "joniliciously@gmail.com"
-            }
-        ],
-        "description": "A port of Laravel 3's HTML class"
-    },
-    {
-        "name": "illuminate/config",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "target-dir": "Illuminate/Config",
-        "source": {
-            "type": "git",
-            "url": "http://github.com/illuminate/config",
-            "reference": "3a496b4b7da4043414780043511f58e632232b2f"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://github.com/illuminate/config/archive/3a496b4b7da4043414780043511f58e632232b2f.zip",
-            "reference": "3a496b4b7da4043414780043511f58e632232b2f",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0",
-            "illuminate/filesystem": "4.0.x",
-            "illuminate/support": "4.0.x"
-        },
-        "time": "2013-01-11 15:52:49",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "4.0-dev"
-            }
-        },
-        "installation-source": "source",
-        "autoload": {
-            "psr-0": {
-                "Illuminate\\Config": ""
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "authors": [
-            {
-                "name": "Taylor Otwell",
-                "email": "taylorotwell@gmail.com"
-            }
         ]
     },
     {
@@ -291,85 +305,75 @@
         "homepage": "http://symfony.com"
     },
     {
-        "name": "meido/form",
+        "name": "symfony/http-kernel",
         "version": "dev-master",
         "version_normalized": "9999999-dev",
+        "target-dir": "Symfony/Component/HttpKernel",
         "source": {
             "type": "git",
-            "url": "https://github.com/meido/form",
-            "reference": "454ad743dc7f7da8ca819a63564142f58e320fa3"
+            "url": "https://github.com/symfony/HttpKernel",
+            "reference": "c5f232173a8f64d48117692eb029ef9e55e6d0f3"
         },
         "dist": {
             "type": "zip",
-            "url": "https://github.com/meido/form/archive/454ad743dc7f7da8ca819a63564142f58e320fa3.zip",
-            "reference": "454ad743dc7f7da8ca819a63564142f58e320fa3",
+            "url": "https://github.com/symfony/HttpKernel/archive/c5f232173a8f64d48117692eb029ef9e55e6d0f3.zip",
+            "reference": "c5f232173a8f64d48117692eb029ef9e55e6d0f3",
             "shasum": ""
         },
         "require": {
-            "php": ">=5.3.0",
-            "illuminate/support": "4.0.x",
-            "illuminate/routing": "4.0.x",
-            "meido/html": "1.1.x"
+            "php": ">=5.3.3",
+            "symfony/event-dispatcher": "2.2.*",
+            "symfony/http-foundation": "2.2.*",
+            "psr/log": ">=1.0,<2.0"
         },
-        "time": "2013-01-15 06:35:43",
-        "type": "library",
-        "installation-source": "source",
-        "autoload": {
-            "classmap": [
-                "src/migrations"
-            ],
-            "psr-0": {
-                "Meido\\Form": "src/"
-            }
+        "require-dev": {
+            "symfony/browser-kit": "2.2.*",
+            "symfony/class-loader": "2.2.*",
+            "symfony/config": "2.2.*",
+            "symfony/console": "2.2.*",
+            "symfony/dependency-injection": "2.2.*",
+            "symfony/finder": "2.2.*",
+            "symfony/process": "2.2.*",
+            "symfony/routing": "2.2.*",
+            "symfony/stopwatch": "2.2.*"
         },
-        "notification-url": "https://packagist.org/downloads/",
-        "authors": [
-            {
-                "name": "Joni Chandra",
-                "email": "joniliciously@gmail.com"
-            }
-        ],
-        "description": "A port of Laravel 3's Form class"
-    },
-    {
-        "name": "illuminate/container",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "target-dir": "Illuminate/Container",
-        "source": {
-            "type": "git",
-            "url": "http://github.com/illuminate/container",
-            "reference": "dcae48ce1a82fdf7602b6cd245bd88123874dfc2"
+        "suggest": {
+            "symfony/browser-kit": "2.2.*",
+            "symfony/class-loader": "2.2.*",
+            "symfony/config": "2.2.*",
+            "symfony/console": "2.2.*",
+            "symfony/dependency-injection": "2.2.*",
+            "symfony/finder": "2.2.*"
         },
-        "dist": {
-            "type": "zip",
-            "url": "https://github.com/illuminate/container/archive/dcae48ce1a82fdf7602b6cd245bd88123874dfc2.zip",
-            "reference": "dcae48ce1a82fdf7602b6cd245bd88123874dfc2",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0"
-        },
-        "time": "2013-01-16 17:29:12",
+        "time": "2013-01-18 20:37:54",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "4.0-dev"
+                "dev-master": "2.2-dev"
             }
         },
         "installation-source": "source",
         "autoload": {
             "psr-0": {
-                "Illuminate\\Container": ""
+                "Symfony\\Component\\HttpKernel\\": ""
             }
         },
         "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
         "authors": [
             {
-                "name": "Taylor Otwell",
-                "email": "taylorotwell@gmail.com"
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "http://symfony.com/contributors"
             }
-        ]
+        ],
+        "description": "Symfony HttpKernel Component",
+        "homepage": "http://symfony.com"
     },
     {
         "name": "illuminate/support",
@@ -498,6 +502,46 @@
             }
         ],
         "description": "A simple wrapper around the mcrypt library."
+    },
+    {
+        "name": "illuminate/container",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "target-dir": "Illuminate/Container",
+        "source": {
+            "type": "git",
+            "url": "http://github.com/illuminate/container",
+            "reference": "dcae48ce1a82fdf7602b6cd245bd88123874dfc2"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://github.com/illuminate/container/archive/dcae48ce1a82fdf7602b6cd245bd88123874dfc2.zip",
+            "reference": "dcae48ce1a82fdf7602b6cd245bd88123874dfc2",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "time": "2013-01-16 17:29:12",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "4.0-dev"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "Illuminate\\Container": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "authors": [
+            {
+                "name": "Taylor Otwell",
+                "email": "taylorotwell@gmail.com"
+            }
+        ]
     },
     {
         "name": "illuminate/events",
@@ -899,61 +943,127 @@
         ]
     },
     {
-        "name": "symfony/translation",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "target-dir": "Symfony/Component/Translation",
+        "name": "meido/html",
+        "version": "v1.1.0",
+        "version_normalized": "1.1.0.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/symfony/Translation",
-            "reference": "54a5fe0f22d740af6e29ae709134873a09643e4c"
+            "url": "https://github.com/meido/html",
+            "reference": "v1.1.0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://github.com/symfony/Translation/archive/54a5fe0f22d740af6e29ae709134873a09643e4c.zip",
-            "reference": "54a5fe0f22d740af6e29ae709134873a09643e4c",
+            "url": "https://github.com/meido/html/archive/v1.1.0.zip",
+            "reference": "v1.1.0",
             "shasum": ""
         },
         "require": {
-            "php": ">=5.3.3"
+            "php": ">=5.3.0",
+            "illuminate/routing": "4.0.x",
+            "illuminate/support": "4.0.x"
         },
         "require-dev": {
-            "symfony/config": "2.2.*",
-            "symfony/yaml": "2.2.*"
+            "mockery/mockery": "0.7.2"
         },
-        "suggest": {
-            "symfony/config": "2.2.*",
-            "symfony/yaml": "2.2.*"
+        "time": "2013-01-13 13:12:11",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Meido\\HTML": "src/"
+            }
         },
-        "time": "2013-01-17 15:25:59",
+        "notification-url": "https://packagist.org/downloads/",
+        "authors": [
+            {
+                "name": "Joni Chandra",
+                "email": "joniliciously@gmail.com"
+            }
+        ],
+        "description": "A port of Laravel 3's HTML class"
+    },
+    {
+        "name": "meido/form",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/meido/form",
+            "reference": "454ad743dc7f7da8ca819a63564142f58e320fa3"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://github.com/meido/form/archive/454ad743dc7f7da8ca819a63564142f58e320fa3.zip",
+            "reference": "454ad743dc7f7da8ca819a63564142f58e320fa3",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0",
+            "illuminate/support": "4.0.x",
+            "illuminate/routing": "4.0.x",
+            "meido/html": "1.1.x"
+        },
+        "time": "2013-01-15 06:35:43",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "classmap": [
+                "src/migrations"
+            ],
+            "psr-0": {
+                "Meido\\Form": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "authors": [
+            {
+                "name": "Joni Chandra",
+                "email": "joniliciously@gmail.com"
+            }
+        ],
+        "description": "A port of Laravel 3's Form class"
+    },
+    {
+        "name": "illuminate/config",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "target-dir": "Illuminate/Config",
+        "source": {
+            "type": "git",
+            "url": "http://github.com/illuminate/config",
+            "reference": "3a496b4b7da4043414780043511f58e632232b2f"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://github.com/illuminate/config/archive/3a496b4b7da4043414780043511f58e632232b2f.zip",
+            "reference": "3a496b4b7da4043414780043511f58e632232b2f",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0",
+            "illuminate/filesystem": "4.0.x",
+            "illuminate/support": "4.0.x"
+        },
+        "time": "2013-01-11 15:52:49",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "2.2-dev"
+                "dev-master": "4.0-dev"
             }
         },
         "installation-source": "source",
         "autoload": {
             "psr-0": {
-                "Symfony\\Component\\Translation\\": ""
+                "Illuminate\\Config": ""
             }
         },
         "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
         "authors": [
             {
-                "name": "Fabien Potencier",
-                "email": "fabien@symfony.com"
-            },
-            {
-                "name": "Symfony Community",
-                "homepage": "http://symfony.com/contributors"
+                "name": "Taylor Otwell",
+                "email": "taylorotwell@gmail.com"
             }
-        ],
-        "description": "Symfony Translation Component",
-        "homepage": "http://symfony.com"
+        ]
     },
     {
         "name": "illuminate/translation",
@@ -1000,115 +1110,5 @@
                 "email": "taylorotwell@gmail.com"
             }
         ]
-    },
-    {
-        "name": "anahkiasen/underscore-php",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "source": {
-            "type": "git",
-            "url": "git://github.com/Anahkiasen/underscore-php.git",
-            "reference": "2d9f4263984f7c3105b5024125de9aae5f996255"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://github.com/Anahkiasen/underscore-php/archive/2d9f4263984f7c3105b5024125de9aae5f996255.zip",
-            "reference": "2d9f4263984f7c3105b5024125de9aae5f996255",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0"
-        },
-        "time": "2013-01-18 09:15:16",
-        "type": "library",
-        "installation-source": "source",
-        "autoload": {
-            "psr-0": {
-                "Underscore": "src/",
-                "Laravel": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Maxime Fabre",
-                "email": "ehtnam6@gmail.com"
-            }
-        ],
-        "description": "A redacted port of Underscore.js for PHP"
-    },
-    {
-        "name": "symfony/http-kernel",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "target-dir": "Symfony/Component/HttpKernel",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/symfony/HttpKernel",
-            "reference": "c5f232173a8f64d48117692eb029ef9e55e6d0f3"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://github.com/symfony/HttpKernel/archive/c5f232173a8f64d48117692eb029ef9e55e6d0f3.zip",
-            "reference": "c5f232173a8f64d48117692eb029ef9e55e6d0f3",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.3",
-            "symfony/event-dispatcher": "2.2.*",
-            "symfony/http-foundation": "2.2.*",
-            "psr/log": ">=1.0,<2.0"
-        },
-        "require-dev": {
-            "symfony/browser-kit": "2.2.*",
-            "symfony/class-loader": "2.2.*",
-            "symfony/config": "2.2.*",
-            "symfony/console": "2.2.*",
-            "symfony/dependency-injection": "2.2.*",
-            "symfony/finder": "2.2.*",
-            "symfony/process": "2.2.*",
-            "symfony/routing": "2.2.*",
-            "symfony/stopwatch": "2.2.*"
-        },
-        "suggest": {
-            "symfony/browser-kit": "2.2.*",
-            "symfony/class-loader": "2.2.*",
-            "symfony/config": "2.2.*",
-            "symfony/console": "2.2.*",
-            "symfony/dependency-injection": "2.2.*",
-            "symfony/finder": "2.2.*"
-        },
-        "time": "2013-01-18 20:37:54",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "2.2-dev"
-            }
-        },
-        "installation-source": "source",
-        "autoload": {
-            "psr-0": {
-                "Symfony\\Component\\HttpKernel\\": ""
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Fabien Potencier",
-                "email": "fabien@symfony.com"
-            },
-            {
-                "name": "Symfony Community",
-                "homepage": "http://symfony.com/contributors"
-            }
-        ],
-        "description": "Symfony HttpKernel Component",
-        "homepage": "http://symfony.com"
     }
 ]
