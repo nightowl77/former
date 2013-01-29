@@ -7,206 +7,120 @@
  */
 namespace Former;
 
+use \Former\Interfaces\FrameworkInterface;
+use \Illuminate\Container\Container;
+use \Underscore\Types\Arrays;
+use \Underscore\Types\String;
+
 class Former
 {
+  /**
+   * The current environment
+   * @var Illuminate\Container
+   */
+  protected $app;
+
   /**
    * The current field being worked on
    * @var Field
    */
-  protected static $field;
+  protected $field;
+
+  /**
+   * The current form framework
+   * @var FrameworkInterface
+   */
+  protected $formFramework;
 
   /**
    * The current form being worked on
    * @var Form
    */
-  protected static $form;
+  protected $form;
 
   /**
-   * Values populating the form
-   * @var array
+   * The Populator instance
+   * @var Populator
    */
-  protected static $values;
+  public $populator;
 
   /**
    * The form's errors
    * @var Message
    */
-  protected static $errors;
+  protected $errors;
 
   /**
    * An array of rules to use
    * @var array
    */
-  protected static $rules = array();
+  protected $rules = array();
 
   /**
    * The namespace of fields
    */
-  const FIELDSPACE = 'Former\Fields\\';
+  const FIELDSPACE = 'Former\Form\Fields\\';
+
+  /**
+   * Build a new Former instance
+   *
+   * @param Illuminate\Container\Container $app
+   */
+  public function __construct(Container $app, Populator $populator, FrameworkInterface $framework)
+  {
+    $this->app           = $app;
+    $this->populator     = $populator;
+    $this->formFramework = $framework;
+    Helpers::setApp($app);
+  }
 
   ////////////////////////////////////////////////////////////////////
   //////////////////////////// INTERFACE /////////////////////////////
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Creates a field instance
+   * Acts as a router that redirects methods to all of Former classes
    *
-   * @param  string $method     The field type
+   * @param  string $method     The method called
    * @param  array  $parameters An array of parameters
-   * @return Former
+   *
+   * @return mixed
    */
-  public static function __callStatic($method, $parameters)
+  public function __call($method, $parameters)
   {
-    // Form opener
-    if (str_contains($method, 'open')) {
-      static::$form = new Form;
-      static::form()->open($method, $parameters);
-
-      return new static;
+    // Dispatch to Form\Elements
+    if ($element = Dispatch::toElements($this->app, $method, $parameters)) {
+      return $element;
     }
 
-    // Avoid conflict with chained label method
-    if ($method == 'label') {
-      return call_user_func_array('static::_label', $parameters);
+    // Dispatch to Form\Form
+    if ($form = Dispatch::toForm($this->app, $method, $parameters)) {
+      return $this->form = $form;
+    }
+
+    // Dispatch to Form\Group
+    if ($group = Dispatch::toGroup($this->app, $method, $parameters)) {
+      return $group;
+    }
+
+    // Dispatch to Form\Actions
+    if ($actions = Dispatch::toActions($this->app, $method, $parameters)) {
+      return $actions;
     }
 
     // Checking for any supplementary classes
     $classes = explode('_', $method);
     $method  = array_pop($classes);
 
-    // Destroy previous field instance
-    static::$field = null;
+    // Dispatch to the different Form\Fields
+    $field = Dispatch::toFields($this->app, $method, $parameters);
+    $field = $this->app['former']->getFramework()->addFieldClasses($field, $classes);
 
-    // Picking the right class
-    if (class_exists(static::FIELDSPACE.ucfirst($method))) {
-      $callClass = ucfirst($method);
-    } else {
-      switch ($method) {
-        case 'submit':
-        case 'reset':
-          $callClass = 'Button';
-          break;
-        case 'multiselect':
-          $callClass = 'Select';
-          break;
-        case 'checkboxes':
-          $callClass = 'Checkbox';
-          break;
-        case 'radios':
-          $callClass = 'Radio';
-          break;
-        case 'files':
-          $callClass = 'File';
-          break;
-        default:
-          $callClass = 'Input';
-          break;
-      }
-    }
-
-    // Check for potential errors
-    if (!class_exists(static::FIELDSPACE.$callClass)) {
-      throw new \Exception('The class "' .static::FIELDSPACE.$callClass. '" called by field "' .$method. '" doesn\'t exist');
-    }
-
-    // Listing parameters
-    $class = static::FIELDSPACE.$callClass;
-    static::$field = new $class(
-      $method,
-      array_get($parameters, 0),
-      array_get($parameters, 1),
-      array_get($parameters, 2),
-      array_get($parameters, 3),
-      array_get($parameters, 4),
-      array_get($parameters, 5)
-    );
-
-    // Inline checkboxes
-    if(in_array($callClass, array('Checkbox', 'Radio')) and
-      in_array('inline', $classes)) {
-      static::$field->inline();
-    }
-
-    // Filter classes according to field type
-    $classes = $callClass == 'Button'
-      ? Framework::getButtonTypes($classes)
-      : Framework::getFieldSizes($classes);
-
-    // Add any supplementary classes we found
-    if($classes) static::$field->addClass($classes);
-
-    // As Buttons are more of a helper class, we return them directly
-    if($callClass == 'Button') return static::$field;
-
-    return new static;
-  }
-
-  /**
-   * Pass a chained method to the Field
-   *
-   * @param  string $method     The method to call
-   * @param  array  $parameters Its parameters
-   * @return Former
-   */
-  public function __call($method, $parameters)
-  {
-    if (!static::form()->isOpened() and static::$form) {
-      $object = static::$form;
-    } else {
-      $object = method_exists($this->control(), $method)
-        ? $this->control()
-        : static::$field;
-    }
-
-    // Call the function on the corresponding class
-    call_user_func_array(array($object, $method), $parameters);
-
-    return $this;
-  }
-
-  /**
-   * Get an attribute/value from the Field instance
-   *
-   * @param  string $attribute The requested attribute
-   * @return string            Its value
-   */
-  public function __get($attribute)
-  {
-    return $this->field()->$attribute;
-  }
-
-  /**
-   * Prints out Field wrapped in ControlGroup
-   *
-   * @return string A form field
-   */
-  public function __toString()
-  {
-    if (static::$form and !static::$form->isOpened()) {
-      return static::form()->__toString();
-    }
-
-    // Dry syntax (hidden fields, plain fields)
-    if (static::$field->isUnwrappable()) {
-      $html = static::$field->__toString();
-    }
-
-    // Bootstrap syntax
-    elseif (Framework::isnt(null) and static::$form) {
-      $html = $this->control()->wrapField(static::$field);
-    }
-
-    // Classic syntax
-    else {
-      $html  = Framework::label(static::$field);
-      $html .= static::$field;
-    }
-
-    return $html;
+    return $this->field = $field;
   }
 
   ////////////////////////////////////////////////////////////////////
-  //////////////////////////// TOOLKIT ///////////////////////////////
+  ///////////////////////////// POPULATOR ////////////////////////////
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -214,66 +128,31 @@ class Former
    *
    * @param mixed $values Can be an Eloquent object or an array
    */
-  public static function populate($values)
+  public function populate($values)
   {
-    static::$values = $values;
+    $this->populator->populateWith($values);
   }
 
   /**
-   * Set a specific value in the population array
+   * Set the value of a particular field
    *
-   * @param string $key   The key to change
-   * @param string $value The new value
+   * @param string $field The field's name
+   * @param mixed  $value Its new value
    */
-  public static function populateField($key, $value)
+  public function populateField($field, $value)
   {
-    if (is_object(static::$values)) {
-      static::$values->$key = $value;
-    } else {
-      static::$values[$key] = $value;
-    }
+    $this->populator->setValue($field, $value);
   }
 
   /**
-   * Get a value from the object/array
+   * Get the value of a field
    *
-   * @param  string $name     The key to retrieve
-   * @param  string $fallback Fallback value if nothing found
-   * @return mixed            Its value
+   * @param string $field The field's name
+   * @return mixed
    */
-  public static function getValue($name, $fallback = null)
+  public function getValue($field, $fallback = null)
   {
-    // Object values
-    if (is_object(static::$values)) {
-
-      // Transform the name into an array
-      $value = static::$values;
-      $name  = str_contains($name, '.') ? explode('.', $name) : (array) $name;
-
-      // Dive into the model
-      foreach ($name as $k => $r) {
-
-        // Multiple results relation
-        if (is_array($value)) {
-          foreach ($value as $subkey => $submodel) {
-            $value[$subkey] = isset($submodel->$r) ? $submodel->$r : $fallback;
-          }
-          continue;
-        }
-
-        // Single model relation
-        if(isset($value->$r) or method_exists($value, 'get_'.$r)) $value = $value->$r;
-        else {
-          $value = $fallback;
-          break;
-        }
-      }
-
-      return $value;
-    }
-
-    // Plain array
-    return array_get(static::$values, $name, $fallback);
+    return $this->populator->getValue($field, $fallback);
   }
 
   /**
@@ -283,26 +162,33 @@ class Former
    * @param  string $fallback A fallback if nothing was found
    * @return string           The results
    */
-  public static function getPost($name, $fallback = null)
+  public function getPost($name, $fallback = null)
   {
-    return \Input::get($name, \Input::old($name, $fallback));
+    $oldValue = $this->app['request']->old($name, $fallback);
+
+    return $this->app['request']->get($name, $oldValue);
   }
+
+  ////////////////////////////////////////////////////////////////////
+  ////////////////////////////// TOOLKIT /////////////////////////////
+  ////////////////////////////////////////////////////////////////////
 
   /**
    * Set the errors to use for validations
    *
    * @param Message $validator The result from a validation
    */
-  public static function withErrors($validator = null)
+  public function withErrors($validator = null)
   {
     // Try to get the errors form the session
-    if(\Session::has('errors')) $errors = \Session::get('errors');
+    if($this->app['session']->has('errors')) $errors = $this->app['session']->get('errors');
 
     // If we're given a raw Validator, go fetch the errors in it
-    if($validator instanceof \Laravel\Validator) $errors = $validator->errors;
+    if(method_exists($validator, 'getMessages')) $errors = $validator->getMessages();
 
     // If we found errors, bind them to the form
-    if(isset($errors)) static::$errors = $errors;
+    if(isset($errors)) $this->errors = $errors;
+    else $this->errors = $validator;
   }
 
   /**
@@ -310,7 +196,7 @@ class Former
    *
    * @param  array *$rules An array of Laravel rules
    */
-  public static function withRules()
+  public function withRules()
   {
     $rules = call_user_func_array('array_merge', func_get_args());
 
@@ -328,32 +214,48 @@ class Former
 
        // Store processed rule in Former's array
        if(!isset($parameters)) $parameters = array();
-       static::$rules[$name][$rule] = $parameters;
+       $this->rules[$name][$rule] = $parameters;
       }
     }
   }
 
   /**
-   * Alter Former's settings
+   * Switch the framework used by Former
    *
-   * @param  string $key   The option to change
-   * @param  string $value Its new value
+   * @param string $framework The name of the framework to use
    */
-  public static function config($key, $value)
+  public function framework($framework = null)
   {
-    if($key == 'framework') return Framework::useFramework($value);
+    if (!$framework) return $this->app['former']->getFramework()->current();
 
-    return Config::set($key, $value);
+    $class = __NAMESPACE__.'\Framework\\'.$framework;
+    $this->formFramework = $this->app->make($class);
   }
 
   /**
-   * Set the useBootstrap option
+   * Get the current framework
    *
-   * @param  boolean $boolean Whether we should use Bootstrap syntax or not
+   * @return FrameworkInterface
    */
-  public static function framework($framework)
+  public function getFramework()
   {
-    return Framework::useFramework($framework) == $framework;
+    return $this->formFramework;
+  }
+
+  /**
+   * Get an option from the config
+   *
+   * @param string $option  The option
+   * @param mixed $default Optional fallback
+   *
+   * @return mixed
+   */
+  public function getOption($option, $default = null)
+  {
+    $prefix = $this->app['config']->get('former::framework');
+    $prefix = !empty($prefix) ? 'former::' : 'config.';
+
+    return $this->app['config']->get($prefix.$option);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -365,78 +267,25 @@ class Former
    *
    * @return string A form closing tag
    */
-  public static function close()
+  public function close()
   {
-    $close = static::form()->close();
+    if (!$this->form) return false;
 
-    // Destroy Form instance
-    static::$form = null;
+    $closed = $this->form()->close();
+
+    // Destroy instances
+    $this->form = null;
+    $this->populator->reset();
 
     // Reset all values
-    static::$values = null;
-    static::$errors = null;
-    static::$rules  = null;
+    $this->errors = null;
+    $this->rules  = null;
 
-    return $close;
-  }
-
-  /**
-   * Generate a hidden field containing the current CSRF token.
-   *
-   * @return string
-   */
-  public static function token()
-  {
-    return static::hidden(\Session::csrf_token, \Session::token())->__toString();
-  }
-
-  /**
-   * Creates a label tag
-   *
-   * @param  string $label      The label content
-   * @param  string $name       The field the label's for
-   * @param  array  $attributes The label's attributes
-   * @return string             A <label> tag
-   */
-  public static function _label($label, $name = null, $attributes = array())
-  {
-    $label = Helpers::translate($label);
-
-    return \Form::label($name, $label, $attributes);
-  }
-
-  /**
-   * Creates a form legend
-   *
-   * @param  string $legend     The text
-   * @param  array  $attributes Its attributes
-   * @return string             A legend tag
-   */
-  public static function legend($legend, $attributes = array())
-  {
-    $legend = Helpers::translate($legend);
-
-    return '<legend'.\HTML::attributes($attributes).'>' .$legend. '</legend>';
-  }
-
-  /**
-   * Writes the form actions
-   *
-   * @return string A .form-actions block
-   */
-  public static function actions()
-  {
-    $buttons = func_get_args();
-
-    $actions  = '<div class="form-actions">';
-      $actions .= implode(' ', (array) $buttons);
-    $actions .= '</div>';
-
-    return $actions;
+    return $closed;
   }
 
   ////////////////////////////////////////////////////////////////////
-  //////////////////////////// HELPERS ///////////////////////////////
+  ////////////////////////////// HELPERS /////////////////////////////
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -445,14 +294,16 @@ class Former
    * @param  string $name A field name
    * @return string       An error message
    */
-  public static function getErrors($name = null)
+  public function getErrors($name = null)
   {
+    if (!$this->field) return false;
+
     // Get name and translate array notation
-    if(!$name) $name = static::$field->name;
+    if(!$name) $name = $this->field->getName();
     $name = preg_replace('/\[([a-z]+)\]/', '.$1', $name);
 
-    if (static::$errors) {
-      return static::$errors->first($name);
+    if ($this->errors) {
+      return $this->errors->first($name);
     }
   }
 
@@ -462,21 +313,9 @@ class Former
    * @param  string $name The field to fetch
    * @return array        An array of rules
    */
-  public static function getRules($name)
+  public function getRules($name)
   {
-    return array_get(static::$rules, $name);
-  }
-
-  /**
-   * Returns the current ControlGroup
-   *
-   * @return ControlGroup
-   */
-  public static function control()
-  {
-    if(!static::$field) return false;
-
-    return static::$field->getControl();
+    return Arrays::get($this->rules, $name);
   }
 
   /**
@@ -484,10 +323,9 @@ class Former
    *
    * @return Form
    */
-  public static function form()
+  public function form()
   {
-    if (!static::$form) return new Form;
-    return static::$form;
+    return $this->form;
   }
 
   /**
@@ -495,10 +333,10 @@ class Former
    *
    * @return Field
    */
-  public static function field()
+  public function field()
   {
-    if(!static::$field) return false;
+    if(!$this->field) return false;
 
-    return self::$field;
+    return $this->field;
   }
 }
