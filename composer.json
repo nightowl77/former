@@ -16,11 +16,10 @@
   ],
   "require": {
     "anahkiasen/underscore-php": "dev-master",
-    "illuminate/config": "dev-master",
-    "illuminate/container": "dev-master",
-    "illuminate/translation" :"dev-master",
-    "meido/form": "dev-master",
-    "meido/html": "1.1.*"
+    "illuminate/config": "4.0.x",
+    "illuminate/container": "4.0.x",
+    "illuminate/translation" :"4.0.x",
+    "meido/form": "dev-master"
   },
   "require-dev": {
     "mockery/mockery": "dev-master"
