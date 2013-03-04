@@ -7,8 +7,8 @@
  */
 namespace Former;
 
-use \Underscore\Types\Arrays;
-use \Underscore\Types\String;
+use Underscore\Types\Arrays;
+use Underscore\Types\String;
 
 class Dispatch
 {
@@ -37,7 +37,7 @@ class Dispatch
 
     $form = new Form\Form($app);
 
-    return $form->open($method, $parameters);
+    return $form->openForm($method, $parameters);
   }
 
   /**

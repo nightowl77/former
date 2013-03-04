@@ -263,6 +263,14 @@ class Builder {
 			return $this->whereSub($column, $operator, $value, $boolean);
 		}
 
+		// If the value is "null", we will just assume the developer wants to add a
+		// where null clause to the query. So, we will allow a short-cut here to
+		// that method for convenience so the developer doesn't have to check.
+		if (is_null($value))
+		{
+			return $this->whereNull($column, $boolean);
+		}
+
 		// Now that we are working with just a simple query we can put the elements
 		// in our array and add the query binding to our array of bindings that
 		// will be bound to each SQL statements when it is finally executed.
@@ -399,7 +407,7 @@ class Builder {
 		$query = $this->newQuery();
 
 		// Once we have the query instance we can simply execute it so it can add all
-		// of the sub-select's conditions to itself, and then we can cache it off 
+		// of the sub-select's conditions to itself, and then we can cache it off
 		// in the array of where clauses for the "main" parent query instance.
 		call_user_func($callback, $query);
 
@@ -504,7 +512,6 @@ class Builder {
 	 *
 	 * @param  string  $column
 	 * @param  mixed   $values
-	 * @param  mixed   $value
 	 * @return Illuminate\Database\Query\Builder
 	 */
 	public function orWhereIn($column, $values)
@@ -535,7 +542,7 @@ class Builder {
 	public function orWhereNotIn($column, $values)
 	{
 		return $this->whereNotIn($column, $values, 'or');
-	}	
+	}
 
 	/**
 	 * Add a where in with a sub-select to the query.
@@ -958,6 +965,17 @@ class Builder {
 	}
 
 	/**
+	 * Retrieve the average of the values of a given column.
+	 *
+	 * @param  string  $column
+	 * @return mixed
+	 */
+	public function avg($column)
+	{
+		return $this->aggregate(__FUNCTION__, array($column));
+	}
+
+	/**
 	 * Execute an aggregate function on the database.
 	 *
 	 * @param  string  $function
@@ -1078,7 +1096,7 @@ class Builder {
 	/**
 	 * Delete a record from the database.
 	 *
-	 * @param  array  $values
+	 * @param  mixed  $id
 	 * @return int
 	 */
 	public function delete($id = null)

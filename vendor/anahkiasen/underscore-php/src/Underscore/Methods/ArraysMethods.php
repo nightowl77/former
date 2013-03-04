@@ -6,11 +6,12 @@
  */
 namespace Underscore\Methods;
 
-use \Closure;
-use \Underscore\Types\Arrays;
+use Closure;
+use Underscore\Types\Arrays;
 
 class ArraysMethods extends CollectionMethods
 {
+
   ////////////////////////////////////////////////////////////////////
   ///////////////////////////// GENERATE /////////////////////////////
   ////////////////////////////////////////////////////////////////////
@@ -279,6 +280,21 @@ class ArraysMethods extends CollectionMethods
   }
 
   /**
+   * Replace the keys in an array with another set
+   *
+   * @param array $array The array
+   * @param array $keys  An array of keys matching the array's size
+   *
+   * @return array
+   */
+  public static function replaceKeys($array, $keys)
+  {
+    $values = array_values($array);
+
+    return array_combine($keys, $values);
+  }
+
+  /**
    * Iterate over an array and modify the array's value
    */
   public static function each($array, Closure $closure)
@@ -338,11 +354,12 @@ class ArraysMethods extends CollectionMethods
   /**
    * Flattens an array to dot notation
    *
-   * @param  array  $array  An array
-   * @param  string $parent The parent passed to the child (private)
-   * @return array          Flattened array to one level
+   * @param  array  $array     An array
+   * @param  string $separator The characater to flatten with
+   * @param  string $parent    The parent passed to the child (private)
+   * @return array             Flattened array to one level
    */
-  public static function flatten($array, $parent = null)
+  public static function flatten($array, $separator = '.', $parent = null)
   {
     if(!is_array($array)) return $array;
 
@@ -350,8 +367,8 @@ class ArraysMethods extends CollectionMethods
 
     // Rewrite keys
     foreach ($array as $key => $value) {
-      if($parent) $key = $parent.'.'.$key;
-      $_flattened[$key] = ArraysMethods::flatten($value, $key);
+      if($parent) $key = $parent.$separator.$key;
+      $_flattened[$key] = ArraysMethods::flatten($value, $separator, $key);
     }
 
     // Flatten

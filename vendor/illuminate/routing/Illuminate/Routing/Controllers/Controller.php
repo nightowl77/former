@@ -4,7 +4,6 @@ use Closure;
 use ReflectionClass;
 use Illuminate\Routing\Router;
 use Illuminate\Container\Container;
-use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Controller {
@@ -113,7 +112,7 @@ class Controller {
 
 		if (is_null($response))
 		{
-			$response = $this->directCallAction($method, $parameters);
+			$response = $this->callMethod($method, $parameters);
 		}
 
 		// If no response is returned from the controller action and a layout is being
@@ -134,7 +133,7 @@ class Controller {
 	 * @param  array   $parameters
 	 * @return mixed
 	 */
-	protected function directCallAction($method, $parameters)
+	protected function callMethod($method, $parameters)
 	{
 		return call_user_func_array(array($this, $method), $parameters);
 	}
@@ -275,7 +274,7 @@ class Controller {
 	 *
 	 * @return array
 	 */
-	public function getFilters()
+	public function getControllerFilters()
 	{
 		return $this->filters;
 	}

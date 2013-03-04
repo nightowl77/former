@@ -43,6 +43,16 @@ class UrlGenerator {
 	}
 
 	/**
+	 * Get the current URL for the request.
+	 *
+	 * @return string
+	 */
+	public function current()
+	{
+		return $this->to($this->request->getPathInfo());
+	}
+
+	/**
 	 * Generate a absolute URL to the given path.
 	 *
 	 * @param  string  $path
@@ -59,11 +69,11 @@ class UrlGenerator {
 		// Once we have the scheme we will compile the "tail" by collapsing the values
 		// into a single string delimited by slashes. This just makes it convenient
 		// for passing the array of parameters to this URL as a list of segments.
-		$tail = trim(implode('/', (array) $parameters), '/');
+		$tail = implode('/', (array) $parameters);
 
 		$root = $this->getRootUrl($scheme);
 
-		return $root.rtrim('/'.$path.'/'.$tail, '/');
+		return $root.'/'.trim($path.'/'.$tail, '/');
 	}
 
 	/**
@@ -98,7 +108,7 @@ class UrlGenerator {
 			$root = str_replace('/index.php', '', $root);
 		}
 
-		return $root.rtrim('/'.$path, '/');
+		return $root.'/'.trim($path, '/');
 	}
 
 	/**
@@ -151,7 +161,7 @@ class UrlGenerator {
 	}
 
 	/**
-	 * Determine if we're short circuting the parameter list.
+	 * Determine if we're short circuiting the parameter list.
 	 *
 	 * @param  array  $parameters
 	 * @return bool

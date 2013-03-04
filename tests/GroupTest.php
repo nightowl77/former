@@ -5,10 +5,7 @@ class GroupTest extends FormerTests
 {
   public function createButton($text)
   {
-    $button = Mockery::mock('Button');
-    $button->shouldReceive('__toString')->andReturn('<button type="button" class="btn">' .$text. '</button>');
-
-    return $button;
+    return new DummyButton($text);
   }
 
   // Data providers ------------------------------------------------ /
@@ -277,6 +274,15 @@ class GroupTest extends FormerTests
     '</div>';
 
     $this->assertEquals($matcher, $group);
+  }
+
+  public function testCanAddClassToGroup()
+  {
+    $control = $this->former->text('foo')->addGroupClass('foo')->__toString();
+    $matcher = $this->createMatcher();
+    $matcher = str_replace('group"', 'group foo"', $matcher);
+
+    $this->assertEquals($matcher, $control);
   }
 
 }

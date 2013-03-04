@@ -41,7 +41,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         $this->folder = substr($dsn, 5);
 
         if (!is_dir($this->folder)) {
-            mkdir($this->folder);
+            mkdir($this->folder, 0777, true);
         }
     }
 
@@ -225,7 +225,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
             return null;
         }
 
-        while(true) {
+        while (true) {
             $chunkSize = min($position, 1024);
             $position -= $chunkSize;
             fseek($file, $position);

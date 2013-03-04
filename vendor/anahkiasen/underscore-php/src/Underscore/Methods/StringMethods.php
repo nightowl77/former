@@ -6,8 +6,8 @@
  */
 namespace Underscore\Methods;
 
-use \Laravel\Str;
-use \Underscore\Types\String;
+use Illuminate\Support\Str;
+use Underscore\Types\String;
 
 class StringMethods extends Str
 {
@@ -56,6 +56,18 @@ class StringMethods extends Str
   ////////////////////////////////////////////////////////////////////
 
   /**
+   * Get a String's length
+   *
+   * @param string $string
+   *
+   * @return integer
+   */
+  public static function length($string)
+  {
+    return mb_strlen($string);
+  }
+
+  /**
    * Whether a string starts with another string
    */
   public static function startsWith($string, $with)
@@ -90,25 +102,25 @@ class StringMethods extends Str
     if (is_array($needle) or is_array($string)) {
 
       if (is_array($needle)) {
-        $from = $needle;
-        $to   = $string;
+        $sliceFrom = $needle;
+        $sliceTo   = $string;
       } else {
-        $from = $string;
-        $to   = $needle;
+        $sliceFrom = $string;
+        $sliceTo   = $needle;
       }
 
       $found = 0;
-      foreach ($from as $need) {
-        if(static::find($to, $need, $absolute, $caseSensitive)) $found++;
+      foreach ($sliceFrom as $need) {
+        if(static::find($sliceTo, $need, $absolute, $caseSensitive)) $found++;
       }
 
-      return ($absolute) ? count($from) == $found : $found > 0;
+      return ($absolute) ? count($sliceFrom) == $found : $found > 0;
     }
 
     // If not case sensitive
     if (!$caseSensitive) {
       $string = strtolower($string);
-      $needle   = strtolower($needle);
+      $needle = strtolower($needle);
     }
 
     // If string found
@@ -118,14 +130,36 @@ class StringMethods extends Str
   }
 
   /**
+   * Limit the number of words in a string
+   *
+   * @param string  $string
+   * @param integer $words Number of words
+   * @param string  $end   Something to append to the sliced string
+   *
+   * @return string
+   */
+  public static function words($string, $words = 100, $end = '...')
+  {
+    if (trim($string) == '') return null;
+
+    preg_match('/^\s*+(?:\S++\s*+){1,'.$words.'}/u', $string, $matches);
+
+    if (static::length($string) == static::length($matches[0])) {
+      $end = null;
+    }
+
+    return rtrim($matches[0]).$end;
+  }
+
+  /**
    * Slice a string with another string
    */
   public static function slice($string, $slice)
   {
-    $to   = static::sliceTo($string, $slice);
-    $from = static::sliceFrom($string, $slice);
+    $sliceTo   = static::sliceTo($string, $slice);
+    $sliceFrom = static::sliceFrom($string, $slice);
 
-    return array($to, $from);
+    return array($sliceTo, $sliceFrom);
   }
 
   /**
@@ -212,5 +246,88 @@ class StringMethods extends Str
     if (!$limit) return explode($with, $string);
 
     return explode($with, $string, $limit);
+  }
+
+  /**
+   * Lowercase a string
+   *
+   * @param string $string
+   *
+   * @return string
+   */
+  public static function lower($string)
+  {
+    return mb_strtolower($string);
+  }
+
+  /**
+   * Lowercase a string
+   *
+   * @param string $string
+   *
+   * @return string
+   */
+  public static function upper($string)
+  {
+    return mb_strtoupper($string);
+  }
+
+  /**
+   * Convert a string to title case
+   *
+   * @param string $string
+   *
+   * @return string
+   */
+  public static function title($string)
+  {
+    return mb_convert_case($string, MB_CASE_TITLE, "UTF-8");
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  /////////////////////////// CASE SWITCHERS /////////////////////////
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Convert a string to PascalCase
+   *
+   * @param string  $string
+   * @param integer $limit  Maximum number of occurences to convert
+   *
+   * @return string
+   */
+  public static function toPascalCase($string, $limit = -1)
+  {
+    return ucfirst(static::toCamelCase($string, $limit));
+  }
+
+  /**
+   * Convert a string to snake_case
+   *
+   * @param string  $string
+   * @param integer $limit  Maximum number of occurences to convert
+   *
+   * @return string
+   */
+  public static function toSnakeCase($string, $limit = -1)
+  {
+    return preg_replace_callback('/([A-Z])/', function($match) {
+      return '_'.strtolower($match[1]);
+    }, $string, $limit);
+  }
+
+  /**
+   * Convert a string to camelCase
+   *
+   * @param string  $string
+   * @param integer $limit  Maximum number of occurences to convert
+   *
+   * @return string
+   */
+  public static function toCamelCase($string, $limit = -1)
+  {
+    return preg_replace_callback('/_([a-z])/', function($match) {
+      return strtoupper($match[1]);
+    }, $string, $limit);
   }
 }

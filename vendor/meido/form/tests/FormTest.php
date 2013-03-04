@@ -404,4 +404,39 @@ class FormTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('<button class="span2">foo</button>', $form2);
 	}
 
+	/**
+     * The a custom macro
+     */
+    public function testCustomMacro()
+    {
+        $this->form->macro('foo', function()
+        {
+           return 'bar';
+        });
+
+        $this->assertEquals('bar', $this->form->foo());
+    }
+
+    /**
+     * Test at custom macro with an argument
+     */
+    public function testCustomMacroWithArgument()
+    {
+        $this->form->macro('foo', function($foo)
+        {
+            return $foo;
+        });
+
+        $this->assertEquals('bar', $this->form->foo('bar'));
+    }
+
+    /**
+     * Test that a call to a non registered macro throws an exception
+     */
+    public function testCallToNonExistingMacro()
+    {
+        $this->setExpectedException('BadMethodCallException');
+        $this->form->foo();
+    }
+
 }

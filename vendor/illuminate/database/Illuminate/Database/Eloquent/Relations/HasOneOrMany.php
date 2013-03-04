@@ -48,7 +48,9 @@ abstract class HasOneOrMany extends Relation {
 	 */
 	public function addEagerConstraints(array $models)
 	{
-		$this->query->whereIn($this->foreignKey, $this->getKeys($models));
+		$key = $this->related->getTable().'.'.$this->foreignKey;
+
+		$this->query->whereIn($key, $this->getKeys($models));
 	}
 
 	/**
@@ -190,7 +192,7 @@ abstract class HasOneOrMany extends Relation {
 	{
 		if ($this->related->usesTimestamps())
 		{
-			$attributes['updated_at'] = $this->related->freshTimestamp();
+			$attributes[$this->updatedAt()] = $this->related->freshTimestamp();
 		}
 
 		return $this->query->update($attributes);

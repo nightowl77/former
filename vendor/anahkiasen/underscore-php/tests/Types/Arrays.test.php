@@ -22,7 +22,7 @@ class ArraysTest extends UnderscoreWrapper
 
   public function testCanCreateChainableObject()
   {
-    $under = Underscore::chain($this->arrayNumbers);
+    $under = Underscore::from($this->arrayNumbers);
     $under = $under->get(1);
 
     $this->assertEquals(2, $under);
@@ -378,6 +378,7 @@ class ArraysTest extends UnderscoreWrapper
   public function testCantChainRange()
   {
     $this->setExpectedException('Exception');
+
     Arrays::from($this->arrayNumbers)->range(5);
   }
 
@@ -462,6 +463,27 @@ class ArraysTest extends UnderscoreWrapper
     );
 
     $flatten = Arrays::flatten($array);
+
+    $this->assertEquals($flatten, $flattened);
+  }
+
+  public function testCanFlattenArraysToCustomNotation()
+  {
+    $array = array(
+      'foo' => 'bar',
+      'kal' => array(
+        'foo' => array(
+          'bar', 'ter',
+        ),
+      ),
+    );
+    $flattened = array(
+      'foo' => 'bar',
+      'kal/foo/0' => 'bar',
+      'kal/foo/1' => 'ter',
+    );
+
+    $flatten = Arrays::flatten($array, '/');
 
     $this->assertEquals($flatten, $flattened);
   }

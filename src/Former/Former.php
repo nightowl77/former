@@ -7,10 +7,10 @@
  */
 namespace Former;
 
-use \Former\Interfaces\FrameworkInterface;
-use \Illuminate\Container\Container;
-use \Underscore\Types\Arrays;
-use \Underscore\Types\String;
+use Former\Interfaces\FrameworkInterface;
+use Illuminate\Container\Container;
+use Underscore\Types\Arrays;
+use Underscore\Types\String;
 
 class Former
 {
@@ -55,6 +55,11 @@ class Former
    * @var array
    */
   protected $rules = array();
+
+  /**
+   * The namespace of Form elements
+   */
+  const FORMSPACE = 'Former\Form\\';
 
   /**
    * The namespace of fields
@@ -130,7 +135,7 @@ class Former
    */
   public function populate($values)
   {
-    $this->populator->populateWith($values);
+    $this->populator->setValues($values);
   }
 
   /**
@@ -198,7 +203,9 @@ class Former
    */
   public function withRules()
   {
-    $rules = call_user_func_array('array_merge', func_get_args());
+    $rules = func_get_args();
+    if (sizeof($rules) == 1 and is_string($rules[0])) $rules = explode('|', $rules[0]);
+    else $rules = call_user_func_array('array_merge', func_get_args());
 
     // Parse the rules according to Laravel conventions
     foreach ($rules as $name => $fieldRules) {
@@ -255,7 +262,7 @@ class Former
     $prefix = $this->app['config']->get('former::framework');
     $prefix = !empty($prefix) ? 'former::' : 'config.';
 
-    return $this->app['config']->get($prefix.$option);
+    return $this->app['config']->get($prefix.$option, $default);
   }
 
   ////////////////////////////////////////////////////////////////////

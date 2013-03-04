@@ -6,13 +6,13 @@
  */
 namespace Underscore;
 
-use \Underscore\Methods\ArraysMethods;
+use Underscore\Methods\ArraysMethods;
 
 class Parse
 {
 
   ////////////////////////////////////////////////////////////////////
-  /////////////////////////////// FROM ///////////////////////////////
+  /////////////////////////////// JSON ///////////////////////////////
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -26,6 +26,42 @@ class Parse
   {
     return json_decode($data, true);
   }
+
+  /**
+   * Converts data to JSON
+   *
+   * @param string $data The data to convert
+   *
+   * @return string Converted data
+   */
+  public static function toJSON($data)
+  {
+    return json_encode($data);
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  //////////////////////////////// XML ///////////////////////////////
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Converts data from XML
+   *
+   * @param string $xml The data to parse
+   *
+   * @return array
+   */
+  public static function fromXML($xml)
+  {
+    $xml = simplexml_load_string($xml);
+    $xml = json_encode($xml);
+    $xml = json_decode($xml, true);
+
+    return $xml;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  //////////////////////////////// CSV ///////////////////////////////
+  ////////////////////////////////////////////////////////////////////
 
   /**
    * Converts data from CSV
@@ -52,38 +88,6 @@ class Parse
     }
 
     return $array;
-  }
-
-  /**
-   * Converts data from XML
-   *
-   * @param string $xml The data to parse
-   *
-   * @return array
-   */
-  public static function fromXML($xml)
-  {
-    $xml = simplexml_load_string($xml);
-    $xml = json_encode($xml);
-    $xml = json_decode($xml, true);
-
-    return $xml;
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  //////////////////////////////// TO ////////////////////////////////
-  ////////////////////////////////////////////////////////////////////
-
-  /**
-   * Converts data to JSON
-   *
-   * @param string $data The data to convert
-   *
-   * @return string Converted data
-   */
-  public static function toJSON($data)
-  {
-    return json_encode($data);
   }
 
   /**
@@ -136,6 +140,11 @@ class Parse
    */
   public static function toArray($data)
   {
+    // Look for common array conversion patterns in objects
+    if (is_object($data) and method_exists($data, 'toArray')) {
+      $data = $data->toArray();
+    }
+
     return (array) $data;
   }
 
@@ -155,9 +164,15 @@ class Parse
    */
   public static function toInteger($data)
   {
-    // Returns size of array instead of 1
-    if (is_array($data)) return sizeof($data);
-    elseif (is_string($data) and !preg_match('/[0-9. ,]+/', $data)) return strlen($data);
+    // Returns size of arrays
+    if (is_array($data)) {
+      return sizeof($data);
+    }
+
+    // Returns size of strings
+    if (is_string($data) and !preg_match('/[0-9. ,]+/', $data)) {
+      return strlen($data);
+    }
 
     return (int) $data;
   }

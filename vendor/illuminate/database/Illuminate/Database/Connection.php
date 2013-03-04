@@ -85,23 +85,33 @@ class Connection implements ConnectionInterface {
 	protected $tablePrefix = '';
 
 	/**
+	 * The name of the database connection.
+	 *
+	 * @var string
+	 */
+	protected $name;
+
+	/**
 	 * Create a new database connection instance.
 	 *
 	 * @param  PDO     $pdo
 	 * @param  string  $database
 	 * @param  string  $tablePrefix
+	 * @param  string  $name
 	 * @return void
 	 */
-	public function __construct(PDO $pdo, $database = '', $tablePrefix = '')
+	public function __construct(PDO $pdo, $database = '', $tablePrefix = '', $name = null)
 	{
+		$this->pdo = $pdo;
+
 		// First we will setup the default properties. We keep track of the DB
 		// name we are connected to since it is needed when some reflective
 		// type commands are run such as checking whether a table exists.
-		$this->pdo = $pdo;
-
 		$this->database = $database;
 
 		$this->tablePrefix = $tablePrefix;
+
+		$this->name = $name;
 
 		// We need to initialize a query grammar and the query post processors
 		// which are both very important parts of the database abstractions
@@ -437,13 +447,40 @@ class Connection implements ConnectionInterface {
 		// To execute the statement, we'll simply call the callback, which will actually
 		// run the SQL against the PDO connection. Then we can calculate the time it
 		// took to execute and log the query SQL, bindings and time in our memory.
-		$result = $callback($this, $query, $bindings);
+		try
+		{
+			$result = $callback($this, $query, $bindings);
+		}
+		catch (\Exception $e)
+		{
+			$this->handleQueryException($e, $query, $bindings);
+		}
 
+		// Once we have run the query we will calculate the time that it took to run and
+		// then log the query, bindings, and execution time so we will report them on
+		// the event that the developer needs them. We'll log time in milliseconds.
 		$time = number_format((microtime(true) - $start) * 1000, 2);
 
 		$this->logQuery($query, $bindings, $time);
 
 		return $result;
+	}
+
+	/**
+	 * Handle an exception that occurred during a query.
+	 *
+	 * @param  Exception  $e
+	 * @param  string     $query
+	 * @param  array      $bindings
+	 * @return void
+	 */
+	protected function handleQueryException(\Exception $e, $query, $bindings)
+	{
+		$bindings = var_export($bindings, true);
+
+		$message = $e->getMessage()." (SQL: {$query}) (Bindings: {$bindings})";
+
+		throw new \Exception($message, 0);	
 	}
 
 	/**
@@ -457,9 +494,7 @@ class Connection implements ConnectionInterface {
 	{
 		if (isset($this->events))
 		{
-			$parameters = compact('query', 'bindings', 'time');
-
-			$this->events->fire('illuminate.query', $parameters);
+			$this->events->fire('illuminate.query', array($query, $bindings, $time));
 		}
 
 		$this->queryLog[] = compact('query', 'bindings', 'time');
@@ -473,6 +508,16 @@ class Connection implements ConnectionInterface {
 	public function getPdo()
 	{
 		return $this->pdo;
+	}
+
+	/**
+	 * Get the database connection name.
+	 *
+	 * @return string|null
+	 */
+	public function getName()
+	{
+		return $this->name;
 	}
 
 	/**
@@ -665,6 +710,17 @@ class Connection implements ConnectionInterface {
 	public function getTablePrefix()
 	{
 		return $this->tablePrefix;
+	}
+
+	/**
+	 * Set the table prefix in use by the connection.
+	 *
+	 * @param  string  $prefix
+	 * @return void
+	 */
+	public function setTablePrefix($prefix)
+	{
+		$this->tablePrefix = $prefix;
 	}
 
 	/**

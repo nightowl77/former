@@ -80,6 +80,18 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 	}
 
 	/**
+	 * Get all of the segments for the request path.
+	 *
+	 * @return array
+	 */
+	public function segments()
+	{
+		$path = $this->path();
+
+		return $path == '/' ? array() : explode('/', $path);
+	}
+
+	/**
 	 * Determine if the current request URI matches a pattern.
 	 *
 	 * @param  string  $pattern
@@ -133,6 +145,11 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 				if ( ! $this->has($value)) return false;
 			}
 
+			return true;
+		}
+
+		if (is_array($this->input($key)))
+		{
 			return true;
 		}
 
@@ -283,7 +300,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 	{
 		$flash = ( ! is_null($filter)) ? $this->$filter($keys) : $this->input();
 
-		$this->sessionStore->flashInput($flash);
+		$this->getSessionStore()->flashInput($flash);
 	}
 
 	/**
@@ -292,9 +309,11 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 	 * @param  dynamic  string
 	 * @return void
 	 */
-	public function flashOnly()
+	public function flashOnly($keys)
 	{
-		return $this->flash('only', func_get_args());
+		$keys = is_array($keys) ? $keys : func_get_args();
+		
+		return $this->flash('only', $keys);
 	}
 
 	/**
@@ -303,9 +322,11 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 	 * @param  dynamic  string
 	 * @return void
 	 */
-	public function flashExcept()
+	public function flashExcept($keys)
 	{
-		return $this->flash('except', func_get_args());
+		$keys = is_array($keys) ? $keys : func_get_args();
+		
+		return $this->flash('except', $keys);
 	}
 
 	/**
@@ -315,7 +336,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 	 */
 	public function flush()
 	{
-		$this->sessionStore->flashInput(array());
+		$this->getSessionStore()->flashInput(array());
 	}
 
 	/**
@@ -363,15 +384,15 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 	/**
 	 * Get the JSON payload for the request.
 	 *
-	 * @return object
+	 * @param  string  $key
+	 * @param  mixed   $default
+	 * @return mixed
 	 */
-	public function json()
+	public function json($key = null, $default = null)
 	{
-		$arguments = func_get_args();
+		$json = json_decode($this->getContent(), true);
 
-		array_unshift($arguments, $this->getContent());
-
-		return call_user_func_array('json_decode', $arguments);
+		return $json ? array_get($json, $key, $default) : false;
 	}
 
 	/**
@@ -408,6 +429,16 @@ class Request extends \Symfony\Component\HttpFoundation\Request {
 	public function setSessionStore(SessionStore $session)
 	{
 		$this->sessionStore = $session;
+	}
+
+	/**
+	 * Determine if the session store has been set.
+	 *
+	 * @return bool
+	 */
+	public function hasSessionStore()
+	{
+		return isset($this->sessionStore);
 	}
 
 }

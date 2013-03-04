@@ -66,7 +66,7 @@ class CookieJar {
 	{
 		$value = $this->request->cookies->get($key);
 
-		if ( ! is_null($key))
+		if ( ! is_null($value))
 		{
 			return $this->decrypt($value);
 		}
@@ -135,6 +135,18 @@ class CookieJar {
 	public function forget($name)
 	{
 		return $this->make($name, null, -2628000);
+	}
+
+	/**
+	 * Set the value of a cookie option.
+	 *
+	 * @param  string  $option
+	 * @param  string  $value
+	 * @return void
+	 */
+	public function setDefault($option, $value)
+	{
+		$this->defaults[$option] = $value;
 	}
 
 	/**

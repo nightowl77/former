@@ -184,6 +184,19 @@ class CheckboxTest extends FormerTests
     $this->assertEquals($matcher, $checkboxes);
   }
 
+  public function testCanPopulateCheckboxesWithRelations()
+  {
+    $eloquent = new DummyEloquent(array('id' => 1, 'name' => 3));
+
+    $this->former->populate($eloquent);
+    $checkboxes = $this->former->checkboxes('roles')->__toString();
+    $matcher = $this->controlGroupMultiple(
+      $this->cb('1', 'Foo').$this->cb('3', 'Bar'),
+      '<label class="control-label">Roles</label>');
+
+    $this->assertEquals($matcher, $checkboxes);
+  }
+
   public function testCanDecodeCorrectlyCheckboxes()
   {
     $checkbox = $this->former->checkbox('foo')->__toString();
@@ -266,5 +279,22 @@ class CheckboxTest extends FormerTests
       '</label>');
 
     $this->assertEquals($matcher, $checkbox);
+  }
+
+  public function testRepopulatedValueDoesntChangeOriginalValue()
+  {
+    $this->markTestSkipped('Waiting for the checkboxes refactor');
+
+    $this->former->populate(array('foo' => true));
+    $checkboxTrue = $this->former->checkbox('foo')->__toString();
+    $matcherTrue = $this->controlGroup($this->cbc());
+
+    $this->assertEquals($matcherTrue, $checkboxTrue);
+
+    $this->former->populate(array('foo' => false));
+    $checkboxFalse = $this->former->checkbox('foo')->__toString();
+    $matcherFalse = $this->controlGroup($this->cb());
+
+    $this->assertEquals($matcherFalse, $checkboxFalse);
   }
 }

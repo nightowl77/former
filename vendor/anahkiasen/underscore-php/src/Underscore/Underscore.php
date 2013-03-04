@@ -6,11 +6,12 @@
  */
 namespace Underscore;
 
-use \Underscore\Traits\Repository;
-use \Underscore\Methods\ArraysMethods;
+use Underscore\Traits\Repository;
+use Underscore\Methods\ArraysMethods;
 
 class Underscore extends Repository
 {
+
   /**
    * The current config
    * @var array
@@ -22,12 +23,13 @@ class Underscore extends Repository
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Alias for from as Underscore::from doesn't have much meaning
+   * Dispatch to the correct Repository class
    *
-   * @param mixed $subject The subject
+   * @param  mixed $subject The subject
+   *
    * @return Repository
    */
-  public static function chain($subject)
+  public static function from($subject)
   {
     $class = Dispatch::toClass($subject);
 
@@ -53,4 +55,5 @@ class Underscore extends Repository
 
     return ArraysMethods::get(static::$options, $option);
   }
+
 }

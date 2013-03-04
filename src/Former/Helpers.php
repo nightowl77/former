@@ -6,10 +6,10 @@
  */
 namespace Former;
 
-use \Illuminate\Container\Container;
-use \Illuminate\Database\Eloquent\Collection;
-use \Illuminate\Translation\Translator;
-use \Underscore\Types\String;
+use Illuminate\Container\Container;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Translation\Translator;
+use Underscore\Types\String;
 
 class Helpers
 {
@@ -105,7 +105,7 @@ class Helpers
    * @param  string $key   The attribute to use as key
    * @return array         A data array
    */
-  public static function queryToArray($query, $value, $key)
+  public static function queryToArray($query, $value = null, $key = null)
   {
     // Automatically fetch Lang objects for people who store translated options lists
     // Same of unfetched queries

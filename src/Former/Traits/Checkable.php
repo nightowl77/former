@@ -6,8 +6,8 @@
  */
 namespace Former\Traits;
 
-use \Underscore\Types\Arrays;
-use \Former\Helpers;
+use Underscore\Types\Arrays;
+use Former\Helpers;
 
 abstract class Checkable extends Field
 {
@@ -56,6 +56,18 @@ abstract class Checkable extends Field
   ////////////////////////////////////////////////////////////////////
   //////////////////////////// CORE METHODS //////////////////////////
   ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Build a new checkable
+   */
+  public function __construct($app, $type, $name, $label, $value, $attributes)
+  {
+    parent::__construct($app, $type, $name, $label, $value, $attributes);
+
+    if (is_array($this->value)) {
+      $this->items($this->value);
+    }
+  }
 
   /**
    * Apply methods to focused checkable
@@ -197,6 +209,12 @@ abstract class Checkable extends Field
     if(sizeof($_items) == 1 and
        is_array($_items[0]))
          $_items = $_items[0];
+
+    // Fetch models if that's what we were passed
+    if (isset($_items[0]) and is_object($_items[0])) {
+      $_items = Helpers::queryToArray($_items);
+      $_items = array_flip($_items);
+    }
 
     // Iterate through items, assign a name and a label to each
     $count = 0;

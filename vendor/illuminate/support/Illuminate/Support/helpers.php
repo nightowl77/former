@@ -240,7 +240,7 @@ function asset($path, $secure = null)
 }
 
 /**
- * Get the base to the base of the install.
+ * Get the path to the base of the install.
  *
  * @return string
  */
@@ -257,9 +257,7 @@ function base_path()
  */
 function camel_case($value)
 {
-	$value = ucwords(str_replace(array('-', '_'), ' ', $value));
-
-	return str_replace(' ', '', $value);
+	return Illuminate\Support\Str::camel($value);
 }
 
 /**
@@ -295,6 +293,17 @@ function csrf_token()
 }
 
 /**
+ * Escape HTML entities in a string.
+ *
+ * @param  string  $value
+ * @return string
+ */
+function e($value)
+{
+	return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
+}
+
+/**
  * Determine if a given string ends with a given needle.
  *
  * @param string $haystack
@@ -303,7 +312,7 @@ function csrf_token()
  */
 function ends_with($haystack, $needle)
 {
-	return $needle == substr($haystack, strlen($haystack) - strlen($needle));
+	return Illuminate\Support\Str::endsWith($haystack, $needle);
 }
 
 /**
@@ -330,6 +339,16 @@ function path($path = null, array $parameters = array(), $secure = null)
 	$app = app();
 
 	return $app['url']->to($path, $parameters, $secure);
+}
+
+/**
+ * Get the path to the public folder.
+ *
+ * @return string
+ */
+function public_path()
+{
+	return app()->make('path.public');
 }
 
 /**
@@ -379,11 +398,7 @@ function secure_path($path, array $parameters = array())
  */
 function snake_case($value, $delimiter = '_')
 {
-	return trim(preg_replace_callback('/[A-Z]/', function($match) use ($delimiter)
-	{
-		return $delimiter.strtolower($match[0]);
-
-	}, $value), $delimiter);
+	return Illuminate\Support\Str::snake($value, $delimiter);
 }
 
 /**
@@ -395,12 +410,7 @@ function snake_case($value, $delimiter = '_')
  */
 function starts_with($haystack, $needles)
 {
-	foreach ((array) $needles as $needle)
-	{
-		if (strpos($haystack, $needle) === 0) return true;
-	}
-
-	return false;
+	return Illuminate\Support\Str::startsWith($haystack, $needles);
 }
 
 /**
@@ -412,12 +422,7 @@ function starts_with($haystack, $needles)
  */
 function str_contains($haystack, $needle)
 {
-	foreach ((array) $needle as $n)
-	{
-		if (strpos($haystack, $n) !== false) return true;
-	}
-
-	return false;
+	return Illuminate\Support\Str::contains($haystack, $needle);
 }
 
 /**
@@ -429,7 +434,7 @@ function str_contains($haystack, $needle)
  */
 function str_finish($value, $cap)
 {
-	return rtrim($value, $cap).$cap;
+	return Illuminate\Support\Str::finish($value, $cap);
 }
 
 /**
@@ -441,19 +446,7 @@ function str_finish($value, $cap)
  */
 function str_is($pattern, $value)
 {
-	// Asterisks are translated into zero-or-more regular expression wildcards
-	// to make it convenient to check if the strings starts with the given
-	// pattern such as "library/*", making any string check convenient.
-	if ($pattern !== '/')
-	{
-		$pattern = str_replace('*', '(.*)', $pattern).'\z';
-	}
-	else
-	{
-		$pattern = '/$';
-	}
-
-	return (bool) preg_match('#^'.$pattern.'#', $value);
+	return Illuminate\Support\Str::is($pattern, $value);
 }
 
 /**
@@ -465,7 +458,20 @@ function str_is($pattern, $value)
  */
 function str_plural($value, $count = 2)
 {
-	return Illuminate\Support\Pluralizer::plural($value, $count);
+	return Illuminate\Support\Str::plural($value, $count);
+}
+
+/**
+ * Generate a "random" alpha-numeric string.
+ *
+ * Should not be considered sufficient for cryptography, etc.
+ *
+ * @param  int     $length
+ * @return string
+ */
+function str_random($length = 16)
+{
+	return Illuminate\Support\Str::random($length);
 }
 
 /**
@@ -476,7 +482,7 @@ function str_plural($value, $count = 2)
  */
 function str_singular($value)
 {
-	return Illuminate\Support\Pluralizer::singular($value);
+	return Illuminate\Support\Str::singular($value);
 }
 
 /**

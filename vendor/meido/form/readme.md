@@ -76,6 +76,7 @@ after that, run `composer install` and start hacking on that beast.
 	- updated illuminate component to `dev-master`
 	- updated `meido/html` to `1.1.*`
 	- moved `Facade` and `ServiceProvider` up one folder following Laravel 4's convention of developing packages.
+- added form macros and polyglot markup. (1.1.1)
 
 ### 1.0.*
 - tagged for stable release. (1.0.0)

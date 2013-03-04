@@ -67,6 +67,13 @@ class Router {
 	protected $inspector;
 
 	/**
+	 * The global parameter patterns.
+	 *
+	 * @var array
+	 */
+	protected $patterns = array();
+
+	/**
 	 * The registered route binders.
 	 *
 	 * @var array
@@ -278,7 +285,7 @@ class Router {
 	{
 		if (isset($options['only']))
 		{
-			return $options['only'];
+			return array_intersect($defaults, $options['only']);
 		}
 		elseif (isset($options['except']))
 		{
@@ -485,11 +492,31 @@ class Router {
 	 */
 	public function group(array $attributes, Closure $callback)
 	{
-		$this->groupStack[] = $attributes;
+		$this->updateGroupStack($attributes);
 
 		call_user_func($callback);
 
 		array_pop($this->groupStack);
+	}
+
+	/**
+	 * Update the group stack array.
+	 *
+	 * @param  array  $attributes
+	 * @return void
+	 */
+	protected function updateGroupStack(array $attributes)
+	{
+		if (count($this->groupStack) > 0)
+		{
+			$last = count($this->groupStack) - 1;
+
+			$this->groupStack[] = array_merge_recursive($this->groupStack[$last], $attributes);
+		}
+		else
+		{
+			$this->groupStack[] = $attributes;
+		}
 	}
 
 	/**
@@ -529,9 +556,9 @@ class Router {
 
 		if (isset($action['prefix']))
 		{
-			$pattern = trim($action['prefix'], '/').'/'.ltrim($pattern, '/');
+			$prefix = $action['prefix'];
 
-			$pattern = trim($pattern, '/');
+			$pattern = $this->addPrefix($pattern, $prefix);
 		}
 
 		// We will create the routes, setting the Closure callbacks on the instance
@@ -541,7 +568,7 @@ class Router {
 
 			'_call' => $this->getCallback($action),
 
-		))->setRouter($this);
+		))->setRouter($this)->addRequirements($this->patterns);
 
 		$route->setRequirement('_method', $method);
 
@@ -578,6 +605,20 @@ class Router {
 		}
 
 		throw new \InvalidArgumentException("Unroutable action.");
+	}
+
+	/**
+	 * Add the given prefix to the given URI pattern.
+	 *
+	 * @param  string  $pattern
+	 * @param  string  $prefix
+	 * @return string
+	 */
+	protected function addPrefix($pattern, $prefix)
+	{
+		$pattern = trim($prefix, '/').'/'.ltrim($pattern, '/');
+
+		return trim($pattern, '/');
 	}
 
 	/**
@@ -753,16 +794,22 @@ class Router {
 
 		if ( ! is_null($response))
 		{
-			return $this->prepare($response, $request);
+			$response = $this->prepare($response, $request);
 		}
-
-		$this->currentRoute = $route = $this->findRoute($request);
 
 		// Once we have the route, we can just run it to get the responses, which will
 		// always be instances of the Response class. Once we have the responses we
 		// will execute the global "after" middlewares to finish off the request.
-		$response = $route->run($request);
+		else
+		{
+			$this->currentRoute = $route = $this->findRoute($request);
 
+			$response = $route->run($request);
+		}
+
+		// Finally after the route has been run we can call the after and close global
+		// filters for the request, giving a chance for any final processing to get
+		// done before the response gets returned back to the user's web browser.
 		$this->callAfterFilter($request, $response);
 
 		return $response;
@@ -923,11 +970,29 @@ class Router {
 			// to test a Closure. So, we will resolve the class out of the container.
 			if (is_string($filter))
 			{
-				return array($this->container->make($filter), 'filter');
+				return $this->getClassBasedFilter($filter);
 			}
 
 			return $filter;
 		}
+	}
+
+	/**
+	 * Get a callable array for a class based filter.
+	 *
+	 * @param  string  $filter
+	 * @return array
+	 */
+	protected function getClassBasedFilter($filter)
+	{
+		if (str_contains($filter, '@'))
+		{
+			list($class, $method) = explode('@', $filter);
+
+			return array($this->container->make($class), $method);
+		}
+
+		return array($this->container->make($filter), 'filter');
 	}
 
 	/**
@@ -1021,6 +1086,18 @@ class Router {
 				if ( ! is_null($response)) return $response;
 			}
 		}
+	}
+
+	/**
+	 * Set a global where pattern on all routes
+	 *
+	 * @param  string  $key
+	 * @param  string  $pattern
+	 * @return void
+	 */
+	public function pattern($key, $pattern)
+	{
+		$this->patterns[$key] = $pattern;
 	}
 
 	/**
@@ -1166,7 +1243,7 @@ class Router {
 	}
 
 	/**
-	 * Disable the runnning of all filters.
+	 * Disable the running of all filters.
 	 *
 	 * @return void
 	 */
@@ -1214,6 +1291,26 @@ class Router {
 	public function setCurrentRoute(Route $route)
 	{
 		$this->currentRoute = $route;
+	}
+
+	/**
+	 * Get the filters defined on the router.
+	 *
+	 * @return array
+	 */
+	public function getFilters()
+	{
+		return $this->filters;
+	}
+
+	/**
+	 * Get the global filters defined on the router.
+	 *
+	 * @return array
+	 */
+	public function getGlobalFilters()
+	{
+		return $this->globalFilters;
 	}
 
 	/**

@@ -7,9 +7,9 @@
  */
 namespace Former\Form;
 
-use \Former\Traits\FormerObject;
-use \Underscore\Types\String;
-use \Underscore\Types\Arrays;
+use Former\Traits\FormerObject;
+use Underscore\Types\String;
+use Underscore\Types\Arrays;
 
 class Actions extends FormerObject
 {
@@ -18,6 +18,13 @@ class Actions extends FormerObject
    * @var Illuminate\Container
    */
   protected $app;
+
+  /**
+   * The Actions block content
+   *
+   * @var string
+   */
+  protected $content;
 
   ////////////////////////////////////////////////////////////////////
   /////////////////////////// CORE METHODS ///////////////////////////

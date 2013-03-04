@@ -20,6 +20,13 @@ class Form {
 	 */
 	protected $encoding = 'utf-8';
 
+    /**
+     * The registered macros
+     *
+     * @var array
+     */
+    protected $macros = array();
+
 	/**
 	 * The HTML helper
 	 *
@@ -534,6 +541,54 @@ class Form {
 		{
 			return $name;
 		}
+	}
+
+    /**
+     * Register a custom macro.
+     *
+     * @param string   $name
+     * @param \Closure $macro
+     */
+    public function macro($name, $macro)
+    {
+        $this->macros[$name] = $macro;
+    }
+
+    /**
+     * Dynamically handle calls to custom macros.
+     *
+     * @param  string $method
+     * @param  array  $args
+     * @throws \BadMethodCallException
+     * @return mixed
+     */
+    public function __call($method, $args)
+	{
+        if ( ! isset($this->macros[$method]))
+        {
+            throw new \BadMethodCallException("Call to undefined method ".__CLASS__."::$method()");
+        }
+
+        switch (count($args))
+        {
+            case 0:
+                return $this->macros[$method]();
+
+            case 1:
+                return $this->macros[$method]($args[0]);
+
+            case 2:
+                return $this->macros[$method]($args[0], $args[1]);
+
+            case 3:
+                return $this->macros[$method]($args[0], $args[1], $args[2]);
+
+            case 4:
+                return $this->macros[$method]($args[0], $args[1], $args[2], $args[3]);
+
+            default:
+                return call_user_func_array($this->macros[$method], $args);
+        }
 	}
 
 }

@@ -1,6 +1,7 @@
 {
   "name": "anahkiasen/former",
   "description": "A powerful form builder for the Laravel framework",
+  "homepage": "http://anahkiasen.github.com/former/",
   "license": "MIT",
   "keywords": [
     "bootstrap",
@@ -15,11 +16,12 @@
     }
   ],
   "require": {
+    "anahkiasen/html-object": "dev-master",
     "anahkiasen/underscore-php": "dev-master",
-    "illuminate/config": "4.0.*",
-    "illuminate/container": "4.0.*",
-    "illuminate/translation" :"4.0.*",
-    "meido/form": "dev-master"
+    "illuminate/config": "4.0.*@dev",
+    "illuminate/container": "4.0.*@dev",
+    "illuminate/translation" :"4.0.*@dev",
+    "meido/form": "1.1.1"
   },
   "require-dev": {
     "mockery/mockery": "dev-master"
@@ -27,12 +29,8 @@
   "autoload": {
     "psr-0": {
       "Former": "src",
-      "Laravel": "src",
-      "Meido": "src"
+      "Laravel": "src"
     }
   },
-  "minimum-stability": "dev",
-  "branch-alias": {
-    "dev-composer": "dev-agnostic"
-  }
+  "minimum-stability": "dev"
 }
