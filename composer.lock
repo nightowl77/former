@@ -974,12 +974,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/HttpKernel.git",
-                "reference": "0f00a19f8ed753d97ff49ffceda04e5878ad9d3d"
+                "reference": "d003a3155c0987e34d9c21efccee4028c9bb5acc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/HttpKernel/zipball/0f00a19f8ed753d97ff49ffceda04e5878ad9d3d",
-                "reference": "0f00a19f8ed753d97ff49ffceda04e5878ad9d3d",
+                "url": "https://api.github.com/repos/symfony/HttpKernel/zipball/d003a3155c0987e34d9c21efccee4028c9bb5acc",
+                "reference": "d003a3155c0987e34d9c21efccee4028c9bb5acc",
                 "shasum": ""
             },
             "require": {
@@ -1034,7 +1034,7 @@
             ],
             "description": "Symfony HttpKernel Component",
             "homepage": "http://symfony.com",
-            "time": "2013-03-01 10:42:10"
+            "time": "2013-03-06 17:38:49"
         },
         {
             "name": "symfony/routing",
@@ -1043,12 +1043,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Routing.git",
-                "reference": "v2.2.0-RC3"
+                "reference": "3a97436e581bae44d0eec454a74bbb4f93593e78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Routing/zipball/v2.2.0-RC3",
-                "reference": "v2.2.0-RC3",
+                "url": "https://api.github.com/repos/symfony/Routing/zipball/3a97436e581bae44d0eec454a74bbb4f93593e78",
+                "reference": "3a97436e581bae44d0eec454a74bbb4f93593e78",
                 "shasum": ""
             },
             "require": {
@@ -1092,7 +1092,7 @@
             ],
             "description": "Symfony Routing Component",
             "homepage": "http://symfony.com",
-            "time": "2013-02-11 11:24:47"
+            "time": "2013-03-06 19:31:19"
         },
         {
             "name": "symfony/translation",

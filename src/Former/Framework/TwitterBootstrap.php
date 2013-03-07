@@ -65,7 +65,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
   public function filterButtonClasses($classes)
   {
     // Filter classes
-    $classes = Arrays::intersect($classes, $this->buttons);
+    // $classes = Arrays::intersect($classes, $this->buttons);
 
     // Prepend button type
     $classes = $this->prependWith($classes, 'btn-');
@@ -172,7 +172,9 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    */
   public function addFormClasses($attributes, $type)
   {
-    $attributes = $this->addClass($attributes, 'form-'.$type);
+    if ($type) {
+      $attributes = $this->addClass($attributes, 'form-'.$type);
+    }
 
     return $attributes;
   }
