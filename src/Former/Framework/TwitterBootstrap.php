@@ -1,20 +1,20 @@
 <?php
-/**
- * TwitterBootstrap
- *
- * The Twitter Bootstrap form framework
- */
 namespace Former\Framework;
 
 use Former\Interfaces\FrameworkInterface;
 use Former\Traits\Field;
 use Former\Traits\Framework;
+use HtmlObject\Element;
 use Illuminate\Container\Container;
-use Underscore\Types\Arrays;
-use Underscore\Types\String;
+use Underscore\Methods\ArraysMethods as Arrays;
+use Underscore\Methods\StringMethods as String;
 
+/**
+ * The Twitter Bootstrap form framework
+ */
 class TwitterBootstrap extends Framework implements FrameworkInterface
 {
+
   /**
    * The button types available
    * @var array
@@ -65,7 +65,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
   public function filterButtonClasses($classes)
   {
     // Filter classes
-    // $classes = Arrays::intersect($classes, $this->buttons);
+    // $classes = array_intersect($classes, $this->buttons);
 
     // Prepend button type
     $classes = $this->prependWith($classes, 'btn-');
@@ -83,7 +83,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
   public function filterFieldClasses($classes)
   {
     // Filter classes
-    $classes = Arrays::intersect($classes, $this->fields);
+    $classes = array_intersect($classes, $this->fields);
 
     // Prepend field type
     $classes = Arrays::each($classes, function($class) {
@@ -105,7 +105,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    *
    * @return Field
    */
-  public function addFieldClasses(Field $field, $classes)
+  public function getFieldClasses(Field $field, $classes)
   {
     // Add inline class for checkables
     if ($field->isCheckable() and in_array('inline', $classes)) {
@@ -118,7 +118,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
 
     // If we found any class, add them
     if ($classes) {
-      $field->setAttribute('class', implode(' ', $classes));
+      $field->class(implode(' ', $classes));
     }
 
     return $field;
@@ -127,14 +127,11 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
   /**
    * Add group classes
    *
-   * @param  array $attributes An array of attributes
-   * @return array An array of attributes with the group class
+   * @return string A list of group classes
    */
-  public function addGroupClasses($attributes)
+  public function getGroupClasses()
   {
-    $attributes = $this->addClass($attributes, 'control-group');
-
-    return $attributes;
+    return 'control-group';
   }
 
   /**
@@ -143,11 +140,9 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    * @param  array $attributes An array of attributes
    * @return array An array of attributes with the label class
    */
-  public function addLabelClasses($attributes)
+  public function getLabelClasses()
   {
-    $attributes = $this->addClass($attributes, 'control-label');
-
-    return $attributes;
+    return 'control-label';
   }
 
   /**
@@ -156,11 +151,9 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    * @param  array $attributes The attributes
    * @return array An array of attributes with the uneditable class
    */
-  public function addUneditableClasses($attributes)
+  public function getUneditableClasses()
   {
-    $attributes = $this->addClass($attributes, 'uneditable-input');
-
-    return $attributes;
+    return 'uneditable-input';
   }
 
   /**
@@ -170,13 +163,9 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    * @param  string $type       The type of form to add
    * @return array
    */
-  public function addFormClasses($attributes, $type)
+  public function getFormClasses($type)
   {
-    if ($type) {
-      $attributes = $this->addClass($attributes, 'form-'.$type);
-    }
-
-    return $attributes;
+    return $type ? 'form-'.$type : null;
   }
 
   /**
@@ -185,11 +174,9 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    * @param  array  $attributes The attributes
    * @return array
    */
-  public function addActionClasses($attributes)
+  public function getActionClasses()
   {
-    $attributes = $this->addClass($attributes, 'form-actions');
-
-    return $attributes;
+    return 'form-actions';
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -206,10 +193,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    */
   public function createHelp($text, $attributes = array())
   {
-    // Add class
-    $attributes = $this->addClass($attributes, 'help-inline');
-
-    return '<span'.$this->attributes($attributes).'>'.$text.'</span>';
+    return Element::create('span', $text, $attributes)->addClass('help-inline');
   }
 
   /**
@@ -220,12 +204,9 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    *
    * @return string
    */
-  public function createBlockHelp($text, $attributes, $attributes = array())
+  public function createBlockHelp($text, $attributes = array())
   {
-    // Add class
-    $attributes = $this->addClass($attributes, 'help-block');
-
-    return '<p'.$this->attributes($attributes).'>'.$text.'</p>';
+    return Element::create('p', $text, $attributes)->addClass('help-block');
   }
 
   /**
@@ -237,7 +218,7 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    */
   public function createDisabledField(Field $field)
   {
-    return '<span'.$this->attributes($field->getAttributes()).'>'.$field->getValue().'</span>';
+    return Element::create('span', $field->getValue(), $field->getAttributes());
   }
 
   /**
@@ -248,21 +229,22 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    *
    * @return string
    */
-  public function createIcon($icon, $attributes, $attributes = array())
+  public function createIcon($iconType, $attributes = array())
   {
+    $icon = Element::create('i', null, $attributes);
+
     // White icon
-    if (String::contains($icon, 'white')) {
-      $icon = String::remove($icon, 'white');
-      $icon = trim($icon, '-');
-      $attributes = $this->addClass($attributes, 'icon-white');
+    if (String::contains($iconType, 'white')) {
+      $iconType = String::remove($iconType, 'white');
+      $iconType = trim($iconType, '-');
+      $icon->addClass('icon-white');
     }
 
     // Check for empty icons
-    if (!$icon) return false;
+    if (!$iconType) return false;
 
     // Create icon
-    $attributes = $this->addClass($attributes, 'icon-'.$icon);
-    $icon = '<i'.$this->attributes($attributes).'></i>';
+    $icon->addClass('icon-'.$iconType);
 
     return $icon;
   }
@@ -279,6 +261,6 @@ class TwitterBootstrap extends Framework implements FrameworkInterface
    */
   public function wrapField($field)
   {
-    return '<div class="controls">' .$field. '</div>';
+    return Element::create('div', $field)->addClass('controls');
   }
 }

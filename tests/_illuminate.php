@@ -1,7 +1,7 @@
 <?php
+use Illuminate\Container\Container;
+
 /**
- * IlluminateMock
- *
  * Dummy Illuminate app for testing purposes
  */
 class IlluminateMock
@@ -10,7 +10,7 @@ class IlluminateMock
 
   public function __construct()
   {
-    $app = Former\Facades\Agnostic::buildContainer();
+    $app = new Container;
 
     // Setup Illuminate
     $app['config']     = $this->getConfig();
@@ -20,9 +20,6 @@ class IlluminateMock
     $app['Illuminate\Routing\UrlGenerator'] = $this->getUrl();
     $app->alias('Illuminate\Routing\UrlGenerator', 'url');
     $app['validator']  = $this->getValidator();
-
-    // Setup Meido
-    $app = Former\Facades\Agnostic::buildMeido($app);
 
     // Setup bindings
     $app->instance('Illuminate\Container\Container', $app);
@@ -50,7 +47,7 @@ class IlluminateMock
    * @param boolean $push      Whether unchecked checkboxes should be pushed
    * @param boolean $automatic Automatic live validation or not
    */
-  public function getConfig($live = true, $unchecked = '', $push = false, $automatic = true)
+  public function getConfig($live = true, $unchecked = '', $push = false, $automatic = true, $errors = true)
   {
     $config = Mockery::mock('config');
     $config->shouldReceive('get')->with('application.encoding', Mockery::any())->andReturn('UTF-8');
@@ -66,6 +63,7 @@ class IlluminateMock
     $config->shouldReceive('get')->with('former::unchecked_value', Mockery::any())->andReturn($unchecked);
     $config->shouldReceive('get')->with('former::push_checkboxes', Mockery::any())->andReturn($push);
     $config->shouldReceive('get')->with('former::automatic_label', Mockery::any())->andReturn($automatic);
+    $config->shouldReceive('get')->with('former::error_messages',  Mockery::any())->andReturn($errors);
 
     return $config;
   }
@@ -105,7 +103,7 @@ class IlluminateMock
    */
   private function getSession()
   {
-    $session = Mockery::mock('session');
+    $session = Mockery::mock('Illuminate\Session\Store');
     $session->shouldReceive('has')->with('errors')->andReturn(false);
     $session->shouldReceive('set')->with('errors')->andReturn(false);
     $session->shouldReceive('getToken')->andReturn('csrf_token');

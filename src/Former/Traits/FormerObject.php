@@ -1,15 +1,13 @@
 <?php
+namespace Former\Traits;
+
+use Former\Former;
+use HtmlObject\Element;
+
 /**
- * FormerObject
- *
  * Base Former object that allows chained attributes setting, adding
  * classes to the existing ones, and provide types helpers
  */
-namespace Former\Traits;
-
-use Former\Helpers;
-use HtmlObject\Element;
-
 abstract class FormerObject extends Element
 {
   /**
@@ -18,6 +16,47 @@ abstract class FormerObject extends Element
    * @var string
    */
   protected $name;
+
+  /**
+   * The field type
+   *
+   * @var string
+   */
+  protected $type;
+
+  /**
+   * A list of class properties to be added to attributes
+   *
+   * @var array
+   */
+  protected $injectedProperties = array('name');
+
+  ////////////////////////////////////////////////////////////////////
+  /////////////////////////// ID AND LABELS //////////////////////////
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Set the matching ID on a field if possible
+   */
+  protected function setId()
+  {
+    if (!array_key_exists('id', $this->attributes) and
+      in_array($this->name, $this->former->labels)) {
+        $this->attributes['id'] = $this->name;
+    }
+  }
+
+  /**
+   * Render the FormerObject and set its id
+   *
+   * @return string
+   */
+  public function render()
+  {
+    $this->setId();
+
+    return parent::render();
+  }
 
   ////////////////////////////////////////////////////////////////////
   ////////////////////////////// GETTERS /////////////////////////////

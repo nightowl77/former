@@ -1,14 +1,13 @@
 <?php
-/**
- * FrameworkInterface
- *
- * Obligatory methods on all frameworks
- */
 namespace Former\Interfaces;
 
 use Former\Traits\Field;
+use HtmlObject\Element;
 use Illuminate\Container\Container;
 
+/**
+ * Mandatory methods on all frameworks
+ */
 interface FrameworkInterface
 {
   public function __construct(Container $app);
@@ -18,14 +17,16 @@ interface FrameworkInterface
   public function filterFieldClasses($classes);
   public function filterState($state);
 
-  // Add classes to attributes
-  public function addFieldClasses(Field $field, $classes);
-  public function addGroupClasses($attributes);
-  public function addLabelClasses($attributes);
-  public function addActionClasses($attributes);
+  // Get classes to add to attributes
+  public function getFieldClasses(Field $field, $classes);
+  public function getGroupClasses();
+  public function getLabelClasses();
+  public function getFormClasses($type);
+  public function getUneditableClasses();
+  public function getActionClasses();
 
   // Render blocks
-  public function createLabelOf(Field $field, $label);
+  public function createLabelOf(Field $field, Element $label);
   public function createHelp($text, $attributes);
   public function createIcon($icon, $attributes);
   public function createDisabledField(Field $field);

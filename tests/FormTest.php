@@ -25,8 +25,9 @@ class FormTest extends FormerTests
   {
     if(in_array($class, array('horizontal', 'inline', 'vertical', 'search'))) $class = 'form-'.$class;
     $forFiles = $forFiles ? 'enctype="multipart/form-data" ' : null;
+    $action = $action ? 'action="' .$action. '" ' : null;
 
-    return '<form ' .$forFiles. 'class="' .$class. '" method="POST" action="' .$action. '" accept-charset="UTF-8">';
+    return '<form ' .$forFiles. 'class="' .$class. '" method="POST" ' .$action. 'accept-charset="UTF-8">';
   }
 
   // Tests --------------------------------------------------------- /
@@ -35,6 +36,14 @@ class FormTest extends FormerTests
   {
     $open = $this->former->open('#')->__toString();
     $matcher = $this->matchForm();
+
+    $this->assertHTML($matcher, $open);
+  }
+  
+  public function testCanOpenAFormWithoutAction()
+  {
+    $open = $this->former->open()->__toString();
+    $matcher = $this->matchForm('horizontal', false, false);
 
     $this->assertHTML($matcher, $open);
   }
@@ -136,7 +145,7 @@ class FormTest extends FormerTests
 
     // Check field
     $input = $this->former->text('foo')->__toString();
-    $label = $this->matchLabel('foo', true);
+    $label = $this->matchLabel('foo', 'foo', true);
 
     $this->assertHTML($this->matchField(array('required' => 'true')), $input);
     $this->assertHTML($label, $input);
@@ -157,7 +166,7 @@ class FormTest extends FormerTests
     $open = $this->former->inline_open()->render();
     $field = $this->former->text('foo');
 
-    $this->assertEquals('<input type="text" name="foo" />', $field->__toString());
+    $this->assertHTML($this->matchField(), $field->__toString());
   }
 
   public function testCanSetNameOnFormOpeners()

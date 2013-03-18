@@ -3,20 +3,22 @@ namespace Former\Form\Fields;
 
 use Former\Traits\Field;
 
+/**
+ * Textarea fields
+ */
 class Textarea extends Field
 {
-
-  ////////////////////////////////////////////////////////////////////
-  /////////////////////////// CORE METHODS ///////////////////////////
-  ////////////////////////////////////////////////////////////////////
+  /**
+   * The textarea's element
+   *
+   * @var string
+   */
+  protected $element = 'textarea';
 
   /**
-   * Outputs a textarea
+   * The textarea's self-closing state
    *
-   * @return string
+   * @var boolean
    */
-  public function render()
-  {
-    return $this->app['meido.form']->textarea($this->name, $this->value, $this->attributes);
-  }
+  protected $isSelfClosing = false;
 }

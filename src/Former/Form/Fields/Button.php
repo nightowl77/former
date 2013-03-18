@@ -1,18 +1,44 @@
 <?php
-/**
- * Button
- *
- * Button fields
- */
 namespace Former\Form\Fields;
 
 use Form;
 use Former\Helpers;
 use Former\Traits\Field;
 
+/**
+ * Button fields
+ */
 class Button extends Field
 {
-  protected $app;
+  /**
+   * The Illuminate Container
+   *
+   * @var Container
+   */
+  protected $former;
+
+  /**
+   * The Button default element
+   *
+   * @var string
+   */
+  protected $element = 'input';
+
+  /**
+   * Default value for self-closing
+   *
+   * @var boolean
+   */
+  protected $isSelfClosing = true;
+
+  /**
+   * A list of class properties to be added to attributes
+   *
+   * @var array
+   */
+  protected $injectedProperties = array(
+    'name', 'type', 'value',
+  );
 
   ////////////////////////////////////////////////////////////////////
   /////////////////////////// CORE METHODS ///////////////////////////
@@ -21,39 +47,32 @@ class Button extends Field
   /**
    * Easier arguments order for button fields
    *
-   * @param string $type       button/submit
-   * @param string $value      Its value
-   * @param array  $attributes Attributes
+   * @param Container $app        The Illuminate Container
+   * @param string    $type       button/submit/reset/etc
+   * @param string    $value      The text of the button
+   * @param string    $link       Its link
+   * @param array     $attributes Its attributes
    */
-  public function __construct($app, $type, $value, $link, $attributes)
+  public function __construct(\Former\Former $former, $type, $value, $link, $attributes)
   {
-    $this->app        = $app;
+    $this->former        = $former;
+
     $this->attributes = (array) $attributes;
     $this->type       = $type;
     $this->value($value);
 
-    // Add href to attributes if link
-    if ($this->type == 'link') {
-      $this->link = $link;
+    // Set correct element for the various button patterns
+    switch ($type) {
+      case 'button':
+        $this->element = 'button';
+        $this->isSelfClosing = false;
+        break;
+      case 'link':
+        $this->element = 'a';
+        $this->attributes['href'] = $link;
+        $this->isSelfClosing = false;
+        break;
     }
-  }
-
-  /**
-   * Renders the button
-   *
-   * @return string A form button
-   */
-  public function render()
-  {
-    $type = $this->type;
-    $this->attributes['name'] = $this->name;
-
-    // Link buttons
-    if ($type == 'link') {
-      return $this->app['meido.html']->to($this->link, $this->value, $this->attributes);
-    }
-
-    return $this->app['meido.form']->$type($this->value, $this->attributes);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -77,9 +96,7 @@ class Button extends Field
    */
   public function value($value)
   {
-    $value = Helpers::translate($value);
-
-    $this->value = $value;
+    $this->value = Helpers::translate($value);
 
     return $this;
   }

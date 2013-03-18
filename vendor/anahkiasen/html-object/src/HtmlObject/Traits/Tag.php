@@ -19,7 +19,7 @@ abstract class Tag extends TreeObject
   /**
    * The object's value
    *
-   * @var mixed
+   * @var string|null|Tag
    */
   protected $value;
 
@@ -37,14 +37,19 @@ abstract class Tag extends TreeObject
    */
   protected $isSelfClosing = false;
 
-  // Defaults ------------------------------------------------------ /
+  /**
+   * Whether the current tag is opened or not
+   *
+   * @var boolean
+   */
+  protected $isOpened = false;
 
   /**
-   * Default element for nested children
+   * A list of class properties to be added to attributes
    *
-   * @var string
+   * @var array
    */
-  protected $defaultChild;
+  protected $injectedProperties = array('value');
 
   ////////////////////////////////////////////////////////////////////
   //////////////////////////// CORE METHODS //////////////////////////
@@ -67,13 +72,17 @@ abstract class Tag extends TreeObject
   /**
    * Wrap the Element in another element
    *
-   * @param string $element The element's tag
+   * @param string|Element $element The element's tag
    *
    * @return Element
    */
-  public function wrapWith($element)
+  public function wrapWith($element, $name = null)
   {
-    return Element::create($element)->nest($this);
+    if ($element instanceof Tag) {
+      return $element->nest($this, $name);
+    }
+
+    return Element::create($element)->nest($this, $name);
   }
 
   /**
@@ -97,14 +106,54 @@ abstract class Tag extends TreeObject
    */
   public function open()
   {
+    $this->isOpened = true;
+
     // If self closing, put value as attribute
     foreach ($this->injectProperties() as $attribute => $property) {
       if (!$this->isSelfClosing and $attribute == 'value') continue;
-      if (!$property) continue;
+      if (is_null($property) and !is_empty($property)) continue;
       $this->attributes[$attribute] = $property;
     }
 
     return '<'.$this->element.Helpers::parseAttributes($this->attributes).'>';
+  }
+
+  /**
+   * Open the tag tree on a particular child
+   *
+   * @param string $onChild The child's key
+   *
+   * @return string
+   */
+  public function openOn($onChildren)
+  {
+    $onChildren = explode('.', $onChildren);
+    $element  = $this->open();
+    $element .= $this->value;
+    $subject  = $this;
+
+    foreach ($onChildren as $onChild) {
+     foreach ($subject->getChildren() as $childName => $child) {
+        if ($childName != $onChild) $element .= $child;
+        else {
+          $subject  = $child;
+          $element .= $child->open();
+          break;
+        }
+      }
+    }
+
+    return $element;
+  }
+
+  /**
+   * Check if the tag is opened
+   *
+   * @return boolean
+   */
+  public function isOpened()
+  {
+    return $this->isOpened;
   }
 
   /**
@@ -124,7 +173,20 @@ abstract class Tag extends TreeObject
    */
   public function close()
   {
-    return '</'.$this->element.'>';
+    $this->isOpened = false;
+    $openedOn       = null;
+    $element        = null;
+
+    foreach ($this->children as $childName => $child) {
+      if ($child->isOpened) {
+        $openedOn = $childName;
+        $element .= $child->close();
+      } elseif ($openedOn and $child->isAfter($openedOn)) {
+        $element .= $child;
+      }
+    }
+
+    return $element .= '</'.$this->element.'>';
   }
 
   /**
@@ -175,15 +237,25 @@ abstract class Tag extends TreeObject
   }
 
   /**
-   * Get an attribute
+   * Get an attribute or a child
    *
-   * @param  string $attribute The desired attribute
+   * @param  string $item The desired child/attribute
    *
-   * @return string            Its value
+   * @return mixed
    */
-  public function __get($attribute)
+  public function __get($item)
   {
-    return Helpers::arrayGet($this->attributes, $attribute);
+    if (array_key_exists($item, $this->attributes)) {
+      return $this->attributes[$item];
+    }
+
+    // Get a child by snake case
+    $child = preg_replace_callback('/([A-Z])/', function($match) {
+      return '.'.strtolower($match[1]);
+    }, $item);
+    $child = $this->getChild($child);
+
+    return $child;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -209,7 +281,8 @@ abstract class Tag extends TreeObject
    */
   public function setValue($value)
   {
-    $this->value = $value;
+    if (is_array($value)) $this->nestChildren($value);
+    else $this->value = $value;
 
     return $this;
   }
@@ -236,9 +309,6 @@ abstract class Tag extends TreeObject
     return $this->value;
   }
 
-  ////////////////////////////////////////////////////////////////////
-  ////////////////////////////// CHILDREN ////////////////////////////
-  ////////////////////////////////////////////////////////////////////
 
   /**
    * Get all the children as a string
@@ -257,56 +327,6 @@ abstract class Tag extends TreeObject
     return implode($children);
   }
 
-  /**
-   * Nests an object withing the current object
-   *
-   * @param Tag|string $element    An element name or an Tag
-   * @param string         $value      The Tag's alias or the element's content
-   * @param array          $attributes
-   *
-   * @return Tag
-   */
-  public function nest($element, $value = null, $attributes = array())
-  {
-    // Tag nesting
-    if ($element instanceof Tag) {
-      return $this->setChild($element, $value);
-    }
-
-    // Shortcuts and strings
-    if (strpos($element, '<') === false) {
-      $element = new Element($element, $value, $attributes);
-    } else {
-      $element = new Text($element);
-    }
-
-    $this->setChild($element);
-
-    return $this;
-  }
-
-  /**
-   * Nest an array of objects/values
-   *
-   * @param array $children
-   */
-  public function nestChildren($children)
-  {
-    if (!is_array($children)) return $this;
-
-    foreach ($children as $element => $value) {
-      if (is_numeric($element)) {
-        if(is_object($value)) $this->setChild($value);
-        elseif($this->defaultChild) $this->nest($this->defaultChild, $value);
-      } else {
-        if(is_object($value)) $this->setChild($value, $element);
-        else $this->nest($element, $value);
-      }
-    }
-
-    return $this;
-  }
-
   ////////////////////////////////////////////////////////////////////
   //////////////////////////// ATTRIBUTES ////////////////////////////
   ////////////////////////////////////////////////////////////////////
@@ -318,7 +338,15 @@ abstract class Tag extends TreeObject
    */
   protected function injectProperties()
   {
-    return array('value' => $this->value);
+    $properties = array();
+
+    foreach ($this->injectedProperties as $property) {
+      if (!isset($this->$property)) continue;
+
+      $properties[$property] = $this->$property;
+    }
+
+    return $properties;
   }
 
   /**
@@ -375,7 +403,7 @@ abstract class Tag extends TreeObject
   /**
    * Add one or more classes to the current field
    *
-   * @param string $class The class to add
+   * @param string $class The class(es) to add
    */
   public function addClass($class)
   {
@@ -390,6 +418,29 @@ abstract class Tag extends TreeObject
     $classes = explode(' ', $this->attributes['class']);
     if (!in_array($class, $classes)) {
       $this->attributes['class'] = trim($this->attributes['class']. ' ' .$class);
+    }
+
+    return $this;
+  }
+
+  /**
+   * Remove one or more classes to the current field
+   *
+   * @param string $class The class(es) to remove
+   */
+  public function removeClass($class)
+  {
+    if (is_array($class)) $class = implode(' ', $class);
+
+    // Cancel if there is no class to begin with
+    if (!isset($this->attributes['class'])) {
+      return $this;
+    }
+
+    $classes = explode(' ', $this->attributes['class']);
+    if (in_array($class, $classes)) {
+      $this->attributes['class'] = str_replace($class, '', $this->attributes['class']);
+      $this->attributes['class'] = trim($this->attributes['class']);
     }
 
     return $this;

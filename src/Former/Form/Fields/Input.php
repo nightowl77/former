@@ -1,21 +1,27 @@
 <?php
-/**
- * Input
- *
- * Renders all basic input types
- */
 namespace Former\Form\Fields;
 
 use Former\Helpers;
 use Former\Traits\Field;
 
+/**
+ * Renders all basic input types
+ */
 class Input extends Field
 {
   /**
    * Current datalist stored
+   *
    * @var array
    */
-  private $datalist = array();
+  protected $datalist = array();
+
+  /**
+   * Properties to be injected as attributes
+   *
+   * @var array
+   */
+  protected $injectedProperties = array('type', 'name', 'value');
 
   ////////////////////////////////////////////////////////////////////
   /////////////////////////// CORE METHODS ///////////////////////////
@@ -23,13 +29,21 @@ class Input extends Field
 
   /**
    * Build an input field
+   *
+   * @param Container $app        The Illuminate Container
+   * @param string    $type       The input type
+   * @param string    $name       Field name
+   * @param string    $label      Its label
+   * @param string    $value      Its value
+   * @param array     $attributes Attributes
    */
-  public function __construct($app, $type, $name, $label, $value, $attributes)
+  public function __construct(\Former\Former $former, $type, $name, $label, $value, $attributes)
   {
-    parent::__construct($app, $type, $name, $label, $value, $attributes);
+    parent::__construct($former, $type, $name, $label, $value, $attributes);
 
     // Multiple models population
     if (is_array($this->value)) {
+      $values = array();
       foreach($this->value as $value) $values[] = is_object($value) ? $value->__toString() : $value;
       if (isset($values)) $this->value = implode(', ', $values);
     }
@@ -45,8 +59,10 @@ class Input extends Field
     // Particular case of the search element
     if($this->isOfType('search')) $this->asSearch();
 
+    $this->setId();
+
     // Render main input
-    $input = $this->app['meido.form']->input($this->type, $this->name, $this->value, $this->attributes);
+    $input = parent::render();
 
     // If we have a datalist to append, print it out
     if ($this->datalist) {
@@ -63,7 +79,9 @@ class Input extends Field
   /**
    * Adds a datalist to the current field
    *
-   * @param  array $datalist An array to use a source
+   * @param  array  $datalist An array to use a source
+   * @param  string $value    The field to use as value
+   * @param  string $key      The field to use as key
    */
   public function useDatalist($datalist, $value = null, $key = null)
   {
@@ -72,7 +90,7 @@ class Input extends Field
     $list = $this->list ?: 'datalist_'.$this->name;
 
     // Create the link to the datalist
-    $this->list($list);
+    $this->list = $list;
     $this->datalist = $datalist;
 
     return $this;
@@ -88,13 +106,16 @@ class Input extends Field
   private function asSearch()
   {
     $this->type = 'text';
-    $this->attributes = Helpers::addClass($this->attributes, 'search-query');
+    $this->addClass('search-query');
 
     return $this;
   }
 
   /**
    * Renders a datalist
+   *
+   * @param string $id     The datalist's id attribute
+   * @param array  $values Its values
    *
    * @return string A <datalist> tag
    */

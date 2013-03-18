@@ -32,6 +32,16 @@ class TreeObjectTest extends HtmlObjectTests
     $this->assertEquals('<p>foo<strong>foo</strong></p>', $this->object->render());
   }
 
+  public function testCanNestObjectsInChildren()
+  {
+    $object = Element::strong('foo');
+    $link   = Element::a('foo');
+    $this->object->nest($object, 'body');
+    $this->object->nest($link, 'body.link');
+
+    $this->assertEquals('<p>foo<strong>foo<a>foo</a></strong></p>', $this->object->render());
+  }
+
   public function testCanGetNestedElements()
   {
     $object = Element::strong('foo');
@@ -44,6 +54,14 @@ class TreeObjectTest extends HtmlObjectTests
   {
     $object = Element::strong('foo');
     $this->object->nestChildren(array('strong' => 'foo', 'em' => 'bar'));
+
+    $this->assertEquals('<p>foo<strong>foo</strong><em>bar</em></p>', $this->object->render());
+  }
+
+  public function testCanNestMultipleValuesUsingNest()
+  {
+    $object = Element::strong('foo');
+    $this->object->nest(array('strong' => 'foo', 'em' => 'bar'));
 
     $this->assertEquals('<p>foo<strong>foo</strong><em>bar</em></p>', $this->object->render());
   }
@@ -124,5 +142,33 @@ class TreeObjectTest extends HtmlObjectTests
 
     $this->assertEquals($child->getParent()->getParent(), $this->object);
     $this->assertEquals($child->getParent()->getParent(), $child->getParent(1));
+  }
+
+  public function testCanCheckIfObjectHasParent()
+  {
+    $this->object->setParent(Element::div());
+
+    $this->assertTrue($this->object->hasParent());
+  }
+
+  public function testCanCheckIfObjectHasChildren()
+  {
+    $this->assertFalse($this->object->hasChildren());
+
+    $this->object->nest(Element::div());
+    $this->assertTrue($this->object->hasChildren());
+  }
+
+  public function testCanCheckIfChildrenIsAfterSibling()
+  {
+    $this->object->nestChildren(array(
+      'first' => Element::div(),
+      'last' => Element::div(),
+    ));
+    $first = $this->object->first;
+    $last  = $this->object->last;
+
+    $this->assertTrue($last->isAfter('first'));
+    $this->assertFalse($first->isAfter('last'));
   }
 }

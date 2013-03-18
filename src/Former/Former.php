@@ -1,17 +1,14 @@
 <?php
-/**
- * Former
- *
- * Superset of Field ; helps the user interact with it and its classes
- * Various form helpers for repopulation, rules, etc.
- */
 namespace Former;
 
 use Former\Interfaces\FrameworkInterface;
 use Illuminate\Container\Container;
-use Underscore\Types\Arrays;
-use Underscore\Types\String;
+use Underscore\Methods\ArraysMethods as Arrays;
 
+/**
+ * Helps the user interact with it and its classes
+ * Various form helpers for repopulation, rules, etc.
+ */
 class Former
 {
   /**
@@ -57,6 +54,13 @@ class Former
   protected $rules = array();
 
   /**
+   * The labels created so far
+   *
+   * @var array
+   */
+  public $labels = array();
+
+  /**
    * The namespace of Form elements
    */
   const FORMSPACE = 'Former\Form\\';
@@ -76,7 +80,7 @@ class Former
     $this->app           = $app;
     $this->populator     = $populator;
     $this->formFramework = $framework;
-    Helpers::setApp($app);
+    Helpers::setApp($this, $this->app['translator']);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -99,17 +103,17 @@ class Former
     }
 
     // Dispatch to Form\Form
-    if ($form = Dispatch::toForm($this->app, $method, $parameters)) {
+    if ($form = Dispatch::toForm($this, $method, $parameters)) {
       return $this->form = $form;
     }
 
     // Dispatch to Form\Group
-    if ($group = Dispatch::toGroup($this->app, $method, $parameters)) {
+    if ($group = Dispatch::toGroup($this, $method, $parameters)) {
       return $group;
     }
 
     // Dispatch to Form\Actions
-    if ($actions = Dispatch::toActions($this->app, $method, $parameters)) {
+    if ($actions = Dispatch::toActions($this, $method, $parameters)) {
       return $actions;
     }
 
@@ -118,8 +122,8 @@ class Former
     $method  = array_pop($classes);
 
     // Dispatch to the different Form\Fields
-    $field = Dispatch::toFields($this->app, $method, $parameters);
-    $field = $this->app['former']->getFramework()->addFieldClasses($field, $classes);
+    $field = Dispatch::toFields($this, $method, $parameters);
+    $field = $this->getFramework()->getFieldClasses($field, $classes);
 
     return $this->field = $field;
   }
@@ -247,6 +251,20 @@ class Former
   public function getFramework()
   {
     return $this->formFramework;
+  }
+
+  /**
+   * Get a class out of the Contaienr
+   *
+   * @param string $dependency The class
+   *
+   * @return object
+   */
+  public function getContainer($dependency = null)
+  {
+    if ($dependency) return $this->app[$dependency];
+
+    return $this->app;
   }
 
   /**

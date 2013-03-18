@@ -18,13 +18,13 @@ class FormerTest extends FormerTests
       'tag' => 'input',
       'attributes' => array(
         'type'  => 'hidden',
-        'name'  => 'csrf_token',
+        'name'  => '_token',
         'value' => 'csrf_token',
       ),
     );
   }
 
-  public function matchLabel($name = null, $required = null)
+  public function matchLabel($name = null, $field = null, $required = null)
   {
     return array(
       'tag' => 'label',

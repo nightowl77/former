@@ -1,13 +1,11 @@
 <?php
-/**
- * Uneditable
- *
- * Uneditable and disabled fields
- */
 namespace Former\Form\Fields;
 
 use Former\Traits\Field;
 
+/**
+ * Uneditable and disabled fields
+ */
 class Uneditable extends Field
 {
 
@@ -22,8 +20,10 @@ class Uneditable extends Field
    */
   public function render()
   {
-    $this->attributes = $this->app['former']->getFramework()->addUneditableClasses($this->attributes);
+    $this->addClass($this->former->getFramework()->getUneditableClasses());
 
-    return $this->app['former']->getFramework()->createDisabledField($this);
+    $this->setId();
+
+    return $this->former->getFramework()->createDisabledField($this);
   }
 }

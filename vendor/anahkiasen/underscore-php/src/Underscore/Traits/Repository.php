@@ -12,25 +12,27 @@ use Underscore\Method;
 use Underscore\Methods\ArraysMethods;
 use Underscore\Methods\StringMethods;
 use Underscore\Parse;
-use Underscore\Types\Arrays;
 use Underscore\Underscore;
 
 abstract class Repository
 {
   /**
    * The subject of the repository
+   *
    * @var mixed
    */
   protected $subject;
 
   /**
    * Custom functions
+   *
    * @var array
    */
   protected static $macros = array();
 
   /**
    * The method used to convert new subjects
+   *
    * @var string
    */
   protected $typecaster;
@@ -132,11 +134,13 @@ abstract class Repository
 
   /**
    * Extend the class with a custom function
+   *
+   * @param string   $method  The macro's name
+   * @param Callable $closure The macro
    */
   public static function extend($method, $closure)
   {
-    $class = get_called_class();
-    static::$macros[$class][$method] = $closure;
+    static::$macros[get_called_class()][$method] = $closure;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -158,8 +162,7 @@ abstract class Repository
     }
 
     // Check for an alias
-    $alias = Method::getAliasOf($method);
-    if ($alias) {
+    if ($alias = Method::getAliasOf($method)) {
       return Repository::callMethod($methodsClass, $alias, $parameters);
     }
 
@@ -169,14 +172,12 @@ abstract class Repository
     }
 
     // Defered methods
-    $defered = Dispatch::toNative($callingClass, $method);
-    if ($defered) {
+    if ($defered = Dispatch::toNative($callingClass, $method)) {
       return call_user_func_array($defered, $parameters);
     }
 
     // Look in the macros
-    $macro = ArraysMethods::get(static::$macros, $callingClass.'.'.$method);
-    if ($macro) {
+    if ($macro = ArraysMethods::get(static::$macros, $callingClass.'.'.$method)) {
       return call_user_func_array($macro, $parameters);
     }
 
@@ -220,10 +221,10 @@ abstract class Repository
    *
    * @return string The correct class
    */
-  private static function computeClassToCall($callingClass, $method, $arguments)
+  protected static function computeClassToCall($callingClass, $method, $arguments)
   {
     if (!StringMethods::find($callingClass, 'Underscore\Types')) {
-      if (isset($parameters[0])) $callingClass = Dispatch::toClass($parameters[0]);
+      if (isset($arguments[0])) $callingClass = Dispatch::toClass($arguments[0]);
       else $callingClass = Method::findInClasses($callingClass, $method);
     }
 
@@ -237,11 +238,10 @@ abstract class Repository
    * @param string $method     The method
    * @param array  $parameters The arguments
    */
-  private static function callMethod($class, $method, $parameters)
+  protected static function callMethod($class, $method, $parameters)
   {
     switch (sizeof($parameters)) {
-      case 0;
-
+      case 0:
         return $class::$method();
       case 1:
         return $class::$method($parameters[0]);

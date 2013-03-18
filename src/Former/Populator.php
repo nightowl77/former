@@ -1,15 +1,13 @@
 <?php
+namespace Former;
+
+use Underscore\Methods\ArraysMethods as Arrays;
+use Underscore\Methods\StringMethods as String;
+
 /**
- * Populator
- *
  * Populates the class with values, and fetches them
  * from various places
  */
-namespace Former;
-
-use Underscore\Types\Arrays;
-use Underscore\Types\String;
-
 class Populator
 {
 

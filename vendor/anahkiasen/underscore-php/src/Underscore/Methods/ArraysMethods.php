@@ -7,7 +7,6 @@
 namespace Underscore\Methods;
 
 use Closure;
-use Underscore\Types\Arrays;
 
 class ArraysMethods extends CollectionMethods
 {
@@ -185,7 +184,9 @@ class ArraysMethods extends CollectionMethods
   {
     if (!$take) return $array[array_rand($array)];
 
-    return Arrays::from($array)->shuffle()->first($take)->obtain();
+    shuffle($array);
+
+    return ArraysMethods::first($array, $take);
   }
 
   /**
@@ -400,6 +401,8 @@ class ArraysMethods extends CollectionMethods
    */
   public static function reject($array, Closure $closure)
   {
+    $filtered = array();
+
     foreach ($array as $key => $value) {
       if (!$closure($value, $key)) $filtered[$key] = $value;
     }

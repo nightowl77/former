@@ -1,6 +1,9 @@
 <?php
 namespace HtmlObject\Traits;
 
+use HtmlObject\Element;
+use HtmlObject\Text;
+
 /**
  * An abstract class to create and manage trees of objects
  */
@@ -14,11 +17,27 @@ abstract class TreeObject
   protected $parent;
 
   /**
+   * The name of the child for the parent
+   *
+   * @var string
+   */
+  public $parentIndex;
+
+  /**
    * Children of the object
    *
    * @var array
    */
   protected $children = array();
+
+  // Defaults ------------------------------------------------------ /
+
+  /**
+   * Default element for nested children
+   *
+   * @var string
+   */
+  protected $defaultChild;
 
   ////////////////////////////////////////////////////////////////////
   /////////////////////////////// PARENT /////////////////////////////
@@ -64,7 +83,7 @@ abstract class TreeObject
    */
   public function hasParent()
   {
-    return $this->parent;
+    return (bool) $this->parent;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -117,7 +136,78 @@ abstract class TreeObject
     return !is_null($this->children) and !empty($this->children);
   }
 
+  /**
+   * Check if a given element is after another sibling
+   *
+   * @param integer|string $sibling The sibling
+   *
+   * @return boolean
+   */
+  public function isAfter($sibling)
+  {
+    $children = array_keys($this->getParent()->getChildren());
+    $child    = array_search($this->parentIndex, $children);
+    $sibling  = array_search($sibling, $children);
+
+    return $child > $sibling;
+  }
+
   // Set ----------------------------------------------------------- /
+
+  /**
+   * Nests an object withing the current object
+   *
+   * @param Tag|string $element    An element name or an Tag
+   * @param string         $value      The Tag's alias or the element's content
+   * @param array          $attributes
+   *
+   * @return Tag
+   */
+  public function nest($element, $value = null, $attributes = array())
+  {
+    // Alias for nestChildren
+    if (is_array($element)) {
+      return $this->nestChildren($element);
+    }
+
+    // Tag nesting
+    if ($element instanceof Tag) {
+      return $this->setChild($element, $value);
+    }
+
+    // Shortcuts and strings
+    if (strpos($element, '<') === false) {
+      $element = new Element($element, $value, $attributes);
+    } else {
+      $element = new Text($element);
+    }
+
+    $this->setChild($element);
+
+    return $this;
+  }
+
+  /**
+   * Nest an array of objects/values
+   *
+   * @param array $children
+   */
+  public function nestChildren($children)
+  {
+    if (!is_array($children)) return $this;
+
+    foreach ($children as $element => $value) {
+      if (is_numeric($element)) {
+        if($value instanceof TreeObject) $this->setChild($value);
+        elseif($this->defaultChild) $this->nest($this->defaultChild, $value);
+      } else {
+        if($value instanceof TreeObject) $this->setChild($value, $element);
+        else $this->nest($element, $value);
+      }
+    }
+
+    return $this;
+  }
 
   /**
    * Add an object to the current object
@@ -129,31 +219,22 @@ abstract class TreeObject
    */
   public function setChild($child, $name = null)
   {
+    if (!$name) $name = sizeof($this->children);
+
+    // Get subject of the setChild
+    $subject = explode('.', $name);
+    $name = array_pop($subject);
+    $subject = implode('.', $subject);
+    $subject = $subject ? $this->getChild($subject) : $this;
+
     // Bind parent to child
     if ($child instanceof TreeObject) {
-      $child->setParent($this);
+      $child->setParent($subject);
     }
 
     // Add object to children
-    if ($name) $this->children[$name] = $child;
-    else $this->children[] = $child;
-
-    return $this;
-  }
-
-  /**
-   * Set an array of children
-   *
-   * @param array $children
-   *
-   * @return TreeObject
-   */
-  public function setChildren($children)
-  {
-    foreach ($children as $name => $child) {
-      if (is_numeric($name)) $name = null;
-      $this->setChild($child, $name);
-    }
+    $child->parentIndex = $name;
+    $subject->children[$name] = $child;
 
     return $this;
   }

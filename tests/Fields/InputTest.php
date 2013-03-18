@@ -82,9 +82,10 @@ class InputTest extends FormerTests
     $this->former->close();
 
     $input = $this->former->text('foo')->data('foo')->class('bar')->__toString();
-    $matcher = '<label for="foo">Foo</label><input data="foo" class="bar" type="text" name="foo" id="foo" />';
 
-    $this->assertEquals($matcher, $input);
+    $label = array('tag' => 'label', 'content' => 'Foo', array('for' => 'foo'));
+    $this->assertHTML($label, $input);
+    $this->assertHTML($this->matchField(), $input);
 
     $this->former->horizontal_open();
   }
@@ -92,7 +93,7 @@ class InputTest extends FormerTests
   public function testHiddenField()
   {
     $input = $this->former->hidden('foo')->value('bar')->__toString();
-    $matcher = '<input type="hidden" name="foo" value="bar" />';
+    $matcher = '<input type="hidden" name="foo" value="bar">';
     $field = Arrays::remove($this->matchField(array(), 'hidden'), 'id');
 
     $this->assertHTML($field, $input);
@@ -101,16 +102,17 @@ class InputTest extends FormerTests
   public function testTextLabel()
   {
     $static  = $this->former->text('foo')->label('bar', $this->testAttributes)->__toString();
-    $matcher = $this->controlGroup(
-      '<input type="text" name="foo" id="foo" />',
-      '<label for="foo" class="foo control-label" data-foo="bar">Bar</label>');
-    $this->assertEquals($matcher, $static);
+    $label = $this->matchLabel('Bar', 'foo');
+    $label['attributes']['class'] = 'foo control-label';
+    $label['attributes']['data-foo'] = 'bar';
+    $this->assertHTML($label, $static);
+    $this->assertHTML($this->matchField(), $static);
+    $this->assertHTML($this->matchControlGroup(), $static);
 
     $input   = $this->former->text('foo', 'bar')->__toString();
-    $matcher = $this->controlGroup(
-      '<input type="text" name="foo" id="foo" />',
-      '<label for="foo" class="control-label">Bar</label>');
-    $this->assertEquals($matcher, $input);
+    $this->assertHTML($this->matchLabel('Bar', 'foo'), $input);
+    $this->assertHTML($this->matchField(), $input);
+    $this->assertHTML($this->matchControlGroup(), $input);
   }
 
   public function testTextLabelWithoutBootstrap()
@@ -118,19 +120,24 @@ class InputTest extends FormerTests
     $this->former->framework('Nude');
 
     $static = $this->former->text('foo')->label('bar', $this->testAttributes)->__toString();
-    $matcher = '<label for="foo" class="foo" data-foo="bar">Bar</label><input type="text" name="foo" id="foo" />';
-    $this->assertEquals($matcher, $static);
+    $label = $this->matchLabel('Bar');
+    $label['attributes']['class'] = 'foo';
+    $label['attributes']['data-foo'] = 'bar';
+    $this->assertHTML($label, $static);
+    $this->assertHTML($this->matchField(), $static);
 
     $input  = $this->former->text('foo', 'bar')->__toString();
-    $matcher = '<label for="foo">Bar</label><input type="text" name="foo" id="foo" />';
-    $this->assertEquals($matcher, $input);
+    $label = $this->matchLabel('Bar');
+    unset($label['attributes']['class']);
+    $this->assertHTML($label, $static);
+    $this->assertHTML($this->matchField(), $static);
   }
 
   public function testRenameField()
   {
     $input = $this->former->text('foo')->name('bar')->__toString();
     $matcher = $this->controlGroup(
-      '<input type="text" name="bar" id="bar" />',
+      '<input id="bar" type="text" name="bar">',
       '<label for="bar" class="control-label">Bar</label>');
 
     $this->assertEquals($matcher, $input);
@@ -140,17 +147,19 @@ class InputTest extends FormerTests
   {
     $static = $this->former->text('foo')->value('bar')->__toString();
     $input  = $this->former->text('foo', null, 'bar')->__toString();
-    $matcher = $this->controlGroup('<input type="text" name="foo" value="bar" id="foo" />');
+    $matcher = $this->controlGroup('<input id="foo" type="text" name="foo" value="bar">');
 
-    $this->assertEquals($matcher, $input);
-    $this->assertEquals($matcher, $static);
+    $this->assertHTML($this->matchField(), $static);
+    $this->assertHTML($this->matchControlGroup(), $static);
+    $this->assertHTML($this->matchField(), $input);
+    $this->assertHTML($this->matchControlGroup(), $input);
   }
 
   public function testForceValue()
   {
     $this->former->populate(array('foo' => 'unbar'));
     $static = $this->former->text('foo')->forceValue('bar')->__toString();
-    $matcher = $this->controlGroup('<input type="text" name="foo" value="bar" id="foo" />');
+    $matcher = $this->controlGroup('<input id="foo" type="text" name="foo" value="bar">');
 
     $this->assertEquals($matcher, $static);
   }
@@ -159,18 +168,20 @@ class InputTest extends FormerTests
   {
     $static = $this->former->text('foo')->class('foo')->data_bar('bar')->__toString();
     $input  = $this->former->text('foo', null, null, array('class' => 'foo', 'data-bar' => 'bar'))->__toString();
-    $matcher = $this->controlGroup('<input class="foo" data-bar="bar" type="text" name="foo" id="foo" />');
 
-    $this->assertEquals($matcher, $input);
-    $this->assertEquals($matcher, $static);
+    $this->assertHTML($this->matchField(), $static);
+    $this->assertHTML($this->matchControlGroup(), $static);
+    $this->assertHTML($this->matchField(), $input);
+    $this->assertHTML($this->matchControlGroup(), $input);
   }
 
   public function testMagicAttributeUnvalue()
   {
     $static = $this->former->text('foo')->require()->__toString();
-    $matcher = $this->controlGroup('<input require="true" type="text" name="foo" id="foo" />');
+    $matcher = $this->controlGroup('<input require="true" type="text" name="foo" id="foo">');
 
-    $this->assertEquals($matcher, $static);
+    $this->assertHTML($this->matchField(), $static);
+    $this->assertHTML($this->matchControlGroup(), $static);
   }
 
   public function testSetAttributes()
@@ -178,9 +189,13 @@ class InputTest extends FormerTests
     $attributes = array('class' => 'foo', 'data-foo' => 'bar');
 
     $static = $this->former->text('foo')->require()->setAttributes($attributes)->__toString();
-    $matcher = $this->controlGroup('<input require="true" class="foo" data-foo="bar" type="text" name="foo" id="foo" />');
 
-    $this->assertEquals($matcher, $static);
+    $field = $this->matchField();
+    $field['attributes']['require'] = 'true';
+    $field['attributes']['class'] = 'foo';
+    $field['attributes']['data-foo'] = 'bar';
+    $this->assertHTML($field, $static);
+    $this->assertHTML($this->matchControlGroup(), $static);
   }
 
   public function testReplaceAttributes()
@@ -188,9 +203,13 @@ class InputTest extends FormerTests
     $attributes = array('class' => 'foo', 'data-foo' => 'bar');
 
     $static = $this->former->text('foo')->require()->replaceAttributes($attributes)->__toString();
-    $matcher = $this->controlGroup('<input class="foo" data-foo="bar" type="text" name="foo" id="foo" />');
+    $matcher = $this->controlGroup('<input class="foo" data-foo="bar" type="text" name="foo" id="foo">');
 
-    $this->assertEquals($matcher, $static);
+    $field = $this->matchField();
+    $field['attributes']['class'] = 'foo';
+    $field['attributes']['data-foo'] = 'bar';
+    $this->assertHTML($field, $static);
+    $this->assertHTML($this->matchControlGroup(), $static);
   }
 
   public function testGetAttribute()
@@ -205,10 +224,12 @@ class InputTest extends FormerTests
   {
     $static = $this->former->text('foo')->class('foo')->addClass('bar')->__toString();
     $input  = $this->former->text('foo', null, null, array('class' => 'foo'))->addClass('bar')->__toString();
-    $matcher = $this->controlGroup('<input class="foo bar" type="text" name="foo" id="foo" />');
+    $matcher = $this->controlGroup('<input class="foo bar" type="text" name="foo" id="foo">');
 
-    $this->assertEquals($matcher, $input);
-    $this->assertEquals($matcher, $static);
+    $this->assertHTML($this->matchControlGroup(), $static);
+    $this->assertHTML($this->matchField(), $static);
+    $this->assertHTML($this->matchControlGroup(), $input);
+    $this->assertHTML($this->matchField(), $input);
   }
 
   /**
@@ -221,9 +242,10 @@ class InputTest extends FormerTests
     $static = $this->former->$method('foo')->addClass('bar')->__toString();
     if($class == 'input-foo ') $class = null;
 
-    $matcher = $this->controlGroup('<input class="' .$class. 'bar" type="text" name="foo" id="foo" />');
-
-    $this->assertEquals($matcher, $static);
+    $field = $this->matchField();
+    $field['attributes']['class'] = $class.'bar';
+    $this->assertHTML($this->matchControlGroup(), $static);
+    $this->assertHTML($field, $static);
   }
 
   public function testErrors()
@@ -236,8 +258,26 @@ class InputTest extends FormerTests
     '<div class="control-group error">'.
       '<label for="required" class="control-label">Required</label>'.
       '<div class="controls">'.
-        '<input type="text" name="required" id="required" />'.
+        '<input id="required" type="text" name="required">'.
         '<span class="help-inline">The required field is required.</span>'.
+      '</div>'.
+    '</div>';
+
+    $this->assertEquals($matcher, $required);
+  }
+
+  public function testCanDisableErrors()
+  {
+    $validator = $this->app->app['validator']->getMessages();
+    $this->app->app['config'] = $this->app->getConfig(true, '', false, true, false);
+
+    $this->former->withErrors($validator);
+    $required = $this->former->text('required')->__toString();
+    $matcher =
+    '<div class="control-group error">'.
+      '<label for="required" class="control-label">Required</label>'.
+      '<div class="controls">'.
+        '<input id="required" type="text" name="required">'.
       '</div>'.
     '</div>';
 
@@ -249,7 +289,7 @@ class InputTest extends FormerTests
     $this->former->populate(array('foo' => 'bar'));
 
     $populate = $this->former->text('foo')->__toString();
-    $matcher = $this->controlGroup('<input type="text" name="foo" value="bar" id="foo" />');
+    $matcher = $this->controlGroup('<input id="foo" type="text" name="foo" value="bar">');
 
     $this->assertEquals($matcher, $populate);
   }
@@ -260,7 +300,7 @@ class InputTest extends FormerTests
     $this->former->populateField('foo', 'foo');
 
     $populate = $this->former->text('foo')->__toString();
-    $matcher = $this->controlGroup('<input type="text" name="foo" value="foo" id="foo" />');
+    $matcher = $this->controlGroup('<input id="foo" type="text" name="foo" value="foo">');
 
     $this->assertEquals($matcher, $populate);
   }
@@ -272,7 +312,7 @@ class InputTest extends FormerTests
 
     $text = $this->former->text('bar.kal.ter')->__toString();
     $matcher = $this->controlGroup(
-      '<input type="text" name="bar.kal.ter" value="men" id="bar.kal.ter" />',
+      '<input id="bar.kal.ter" type="text" name="bar.kal.ter" value="men">',
       '<label for="bar.kal.ter" class="control-label">Bar.kal.ter</label>');
 
     $this->assertEquals($matcher, $text);
@@ -285,7 +325,7 @@ class InputTest extends FormerTests
 
     $text = $this->former->text('bar.kal.ter')->name('ter')->__toString();
     $matcher = $this->controlGroup(
-      '<input type="text" name="ter" value="men" id="ter" />',
+      '<input id="ter" type="text" name="ter" value="men">',
       '<label for="ter" class="control-label">Ter</label>');
 
     $this->assertEquals($matcher, $text);
@@ -299,7 +339,7 @@ class InputTest extends FormerTests
 
     $text = $this->former->text('bar.kal')->__toString();
     $matcher = $this->controlGroup(
-      '<input type="text" name="bar.kal" value="val0, val1" id="bar.kal" />',
+      '<input id="bar.kal" type="text" name="bar.kal" value="val0, val1">',
       '<label for="bar.kal" class="control-label">Bar.kal</label>');
 
     $this->assertEquals($matcher, $text);
@@ -309,7 +349,7 @@ class InputTest extends FormerTests
   {
     $this->former->populate(array('foo' => 'bar'));
     $populate = $this->former->password('foo')->__toString();
-    $matcher = $this->controlGroup('<input type="password" name="foo" id="foo" />');
+    $matcher = $this->controlGroup('<input id="foo" type="password" name="foo">');
 
     $this->assertEquals($matcher, $populate);
   }
@@ -321,7 +361,7 @@ class InputTest extends FormerTests
     '<div class="control-group">'.
       '<label for="foo" class="control-label">Foo</label>'.
       '<div class="controls">'.
-        '<input list="datalist_foo" type="text" name="foo" id="foo" />'.
+        '<input list="datalist_foo" id="foo" type="text" name="foo">'.
         '<datalist id="datalist_foo">'.
           '<option value="bar">foo</option>'.
           '<option value="tar">kel</option>'.
@@ -339,7 +379,7 @@ class InputTest extends FormerTests
     '<div class="control-group">'.
       '<label for="foo" class="control-label">Foo</label>'.
       '<div class="controls">'.
-        '<input list="bar" type="text" name="foo" id="foo" />'.
+        '<input list="bar" id="foo" type="text" name="foo">'.
         '<datalist id="bar">'.
           '<option value="bar">foo</option>'.
           '<option value="tar">kel</option>'.

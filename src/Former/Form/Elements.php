@@ -1,19 +1,39 @@
 <?php
+namespace Former\Form;
+
+use Former\Former;
+use Former\Helpers;
+use HtmlObject\Element;
+
 /**
- * Elements
- *
  * The different parts of a form that are neither fields nor groups
  * not buttons and stuff
  */
-namespace Former\Form;
-
-use Former\Helpers;
-
 class Elements
 {
-  public function __construct($app)
+  /**
+   * The Former instance
+   *
+   * @var Former
+   */
+  protected $former;
+
+  /**
+   * The Session instance
+   *
+   * @var Session
+   */
+  protected $session;
+
+  /**
+   * Build a new Element
+   *
+   * @param Container $app
+   */
+  public function __construct(Former $former, $session)
   {
-    $this->app = $app;
+    $this->former  = $former;
+    $this->session = $session;
   }
 
   /**
@@ -23,16 +43,16 @@ class Elements
    */
   public function token()
   {
-    $csrf = $this->app['session']->getToken();
+    $csrf = $this->session->getToken();
 
-    return $this->app['former']->hidden($csrf, $csrf)->__toString();
+    return (string) $this->former->hidden('_token', $csrf);
   }
 
   /**
    * Creates a label tag
    *
-   * @param  string $label      The label content
    * @param  string $name       The field the label's for
+   * @param  string $label      The label content
    * @param  array  $attributes The label's attributes
    * @return string             A <label> tag
    */
@@ -40,7 +60,10 @@ class Elements
   {
     $label = Helpers::translate($label);
 
-    return $this->app['meido.form']->label($name, $label, $attributes);
+    $attributes['for'] = $name;
+    $this->former->labels[] = $name;
+
+    return Element::create('label', $label, $attributes);
   }
 
   /**
@@ -54,7 +77,7 @@ class Elements
   {
     $legend = Helpers::translate($legend);
 
-    return '<legend'.$this->app['meido.html']->attributes($attributes).'>' .$legend. '</legend>';
+    return Element::create('legend', $legend, $attributes);
   }
 
   /**

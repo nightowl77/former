@@ -1,22 +1,23 @@
 <?php
-/**
- * Nude
- *
- * Base HTML5 forms
- */
 namespace Former\Framework;
 
-use Illuminate\Container\Container;
 use Former\Interfaces\FrameworkInterface;
 use Former\Traits\Field;
 use Former\Traits\Framework;
+use HtmlObject\Element;
+use HtmlObject\Input;
+use Illuminate\Container\Container;
 
+/**
+ * Base HTML5 forms
+ */
 class Nude extends Framework implements FrameworkInterface
 {
+
   /**
    * Create a new Nude instance
    *
-   * @param \Illuminate\Container\Container $app
+   * @param Container $app
    */
   public function __construct(Container $app)
   {
@@ -41,41 +42,41 @@ class Nude extends Framework implements FrameworkInterface
   ///////////////////////////// ADD CLASSES //////////////////////////
   ////////////////////////////////////////////////////////////////////
 
-  public function addFieldClasses(Field $field, $classes = array())
+  public function getFieldClasses(Field $field, $classes = array())
   {
     $classes = $this->filterFieldClasses($classes);
 
     // If we found any class, add them
     if ($classes) {
-      $field->setAttribute('class', implode(' ', $classes));
+      $field->class(implode(' ', $classes));
     }
 
     return $field;
   }
 
-  public function addGroupClasses($attributes)
+  public function getGroupClasses()
   {
-    return $attributes;
+    return null;
   }
 
-  public function addLabelClasses($attributes)
+  public function getLabelClasses()
   {
-    return $attributes;
+    return null;
   }
 
-  public function addUneditableClasses($attributes)
+  public function getUneditableClasses()
   {
-    return $attributes;
+    return null;
   }
 
-  public function addFormClasses($attributes)
+  public function getFormClasses($type)
   {
-    return $attributes;
+    return null;
   }
 
-  public function addActionClasses($attributes)
+  public function getActionClasses()
   {
-    return $attributes;
+    return null;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -87,7 +88,7 @@ class Nude extends Framework implements FrameworkInterface
    */
   public function createHelp($text, $attributes)
   {
-    return '<small'.$this->app['meido.html']->attributes($attributes).'>'.$text.'</small>';
+    return Element::create('small', $text, $attributes);
   }
 
   /**
@@ -95,9 +96,7 @@ class Nude extends Framework implements FrameworkInterface
    */
   public function createIcon($icon, $attributes)
   {
-    $attributes = $this->addClass($attributes, $icon);
-
-    return '<i'.$this->attributes($attributes).'></i>';
+    return Element::create('i', null, $attributes)->addClass($icon);
   }
 
   /**
@@ -111,7 +110,7 @@ class Nude extends Framework implements FrameworkInterface
   {
     $field->disabled();
 
-    return $this->app['meido.form']->input('text', $field->getName(), $field->getValue(), $field->getAttributes());
+    return Input::create('text', $field->getName(), $field->getValue(), $field->getAttributes());
   }
 
   ////////////////////////////////////////////////////////////////////

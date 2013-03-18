@@ -1,14 +1,13 @@
 <?php
-/**
- * File
- *
- * Class for file fields
- */
 namespace Former\Form\Fields;
 
+use HtmlObject\Input as HtmlInput;
 use Former\Traits\Field;
 use Laravel\File as LaravelFile;
 
+/**
+ * Class for file fields
+ */
 class File extends Field
 {
   /**
@@ -23,6 +22,8 @@ class File extends Field
    */
   private $mimeGroups = array('audio', 'video', 'image');
 
+  protected $injectedProperties = array('type', 'name');
+
   ////////////////////////////////////////////////////////////////////
   /////////////////////////// CORE METHODS ///////////////////////////
   ////////////////////////////////////////////////////////////////////
@@ -30,21 +31,23 @@ class File extends Field
   /**
    * Easier arguments order for hidden fields
    *
-   * @param string $type       hidden
-   * @param string $name       Field name
-   * @param string $value      Its value
-   * @param array  $attributes Attributes
+   * @param Container $app        The Illuminate Container
+   * @param string    $type       file
+   * @param string    $name       Field name
+   * @param string    $label      Its label
+   * @param string    $value      Its value
+   * @param array     $attributes Attributes
    */
-  public function __construct($app, $type, $name, $label, $value, $attributes)
+  public function __construct(\Former\Former $former, $type, $name, $label, $value, $attributes)
   {
-    parent::__construct($app, $type, $name, $label, $value, $attributes);
-
     // Multiple files field
-    if ($this->isOfType('files')) {
-      $this->multiple();
-      $this->type = 'file';
-      $this->name = $this->name.'[]';
+    if ($type == 'files') {
+      $attributes['multiple'] = 'true';
+      $type = 'file';
+      $name = $name.'[]';
     }
+
+    parent::__construct($former, $type, $name, $label, $value, $attributes);
   }
 
   /**
@@ -56,10 +59,10 @@ class File extends Field
   {
     // Maximum file size
     $hidden = $this->maxSize
-      ? $this->app['meido.form']->hidden('MAX_FILE_SIZE', $this->maxSize)
+      ? HtmlInput::hidden('MAX_FILE_SIZE', $this->maxSize)
       : null;
 
-    return $this->app['meido.form']->input($this->type, $this->name, $this->value, $this->attributes).$hidden;
+    return parent::render().$hidden;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -69,10 +72,12 @@ class File extends Field
   /**
    * Set which types of files are accepted by the file input
    *
-   * @param string $mimes* A list of extensions/mimes/groups to accept
+   * @param string $mimes A list of extensions/mimes/groups to accept
    */
   public function accept()
   {
+    $mimes = array();
+
     // Transform all extensions/groups to mime types
     foreach (func_get_args() as $mime) {
 
@@ -92,7 +97,8 @@ class File extends Field
   /**
    * Set a maximum size for files
    *
-   * @param  integer $size A maximum size in Kb
+   * @param integer $size  A maximum size
+   * @param string  $units The size's unit
    */
   public function max($size, $units = 'KB')
   {

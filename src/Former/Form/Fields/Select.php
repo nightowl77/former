@@ -1,27 +1,34 @@
 <?php
-/**
- * Select
- *
- * Everything list-related (select, multiselect, ...)
- */
 namespace Former\Form\Fields;
 
-use Former\Traits\Field;
 use Former\Helpers;
+use Former\Traits\Field;
+use HtmlObject\Element;
 
+/**
+ * Everything list-related (select, multiselect, ...)
+ */
 class Select extends Field
 {
-  /**
-   * The select options
-   * @var array
-   */
-  private $options = array();
-
   /**
    * The select's placeholder
    * @var string
    */
   private $placeholder = null;
+
+  /**
+   * The select's element
+   *
+   * @var string
+   */
+  protected $element = 'select';
+
+  /**
+   * The select's self-closing state
+   *
+   * @var boolean
+   */
+  protected $isSelfClosing = false;
 
   ////////////////////////////////////////////////////////////////////
   /////////////////////////// CORE METHODS ///////////////////////////
@@ -30,19 +37,20 @@ class Select extends Field
   /**
    * Easier arguments order for selects
    *
-   * @param string $type       select or multiselect
-   * @param string $name       Field name
-   * @param string $label      Field label
-   * @param array  $options    Its options
-   * @param mixed  $selected   Selected entry
-   * @param array  $attributes Attributes
+   * @param Container $app        The Illuminate Container
+   * @param string    $type       file
+   * @param string    $name       Field name
+   * @param string    $label      Its label
+   * @param array     $options    The select's options
+   * @param string    $selected   The selected option
+   * @param array     $attributes Attributes
    */
-  public function __construct($app, $type, $name, $label, $options, $selected, $attributes)
+  public function __construct(\Former\Former $former, $type, $name, $label, $options, $selected, $attributes)
   {
-    if($options)  $this->options = $options;
     if($selected) $this->value = $selected;
+    if($options)  $this->options($options);
 
-    parent::__construct($app, $type, $name, $label, $selected, $attributes);
+    parent::__construct($former, $type, $name, $label, $selected, $attributes);
 
     // Multiple models population
     if (is_array($this->value)) {
@@ -58,31 +66,49 @@ class Select extends Field
    */
   public function render()
   {
-    $name = $this->name;
-
     // Multiselects
     if ($this->isOfType('multiselect')) {
       if (!isset($this->attributes['id'])) {
-        $this->setAttribute('id', $name);
+        $this->setAttribute('id', $this->name);
       }
 
       $this->multiple();
-      $name .= '[]';
-    }
+      $this->name .= '[]';
 
-    // Render select
-    $select = $this->app['meido.form']->select($name, $this->options, $this->value, $this->attributes);
+      if ($this->hasChildren() and is_array($this->value)) {
+        foreach ($this->value as $value) {
+          $this->getChild($value)->selected('selected');
+        }
+      }
+    } else {
+       if ($this->hasChildren() and $this->value) {
+          $this->getChild($this->value)->selected('selected');
+       }
+    }
 
     // Add placeholder text if any
-    if ($this->placeholder) {
-      $placeholder = array('value' => '', 'disabled' => '');
-      if(!$this->value) $placeholder['selected'] = '';
-      $placeholder = '<option'.$this->app['meido.html']->attributes($placeholder).'>' .$this->placeholder. '</option>';
-
-      $select = preg_replace('#<select([^>]+)>#', '$0'.$placeholder, $select);
+    if ($placeholder = $this->getPlaceholder()) {
+      array_unshift($this->children, $placeholder);
     }
 
-    return $select;
+    $this->value = null;
+
+    return parent::render();
+  }
+
+  /**
+   * Get the Select's placeholder
+   *
+   * @return Element
+   */
+  protected function getPlaceholder()
+  {
+    if (!$this->placeholder) return false;
+
+    $attributes = array('value' => '', 'disabled' => 'disabled');
+    if(!$this->value) $attributes['selected'] = 'selected';
+
+    return Element::create('option', $this->placeholder, $attributes);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -92,13 +118,15 @@ class Select extends Field
   /**
    * Set the select options
    *
-   * @param  array   $options      The options as an array
+   * @param  array   $_options     The options as an array
    * @param  mixed   $selected     Facultative selected entry
    * @param  boolean $valuesAsKeys Whether the array's values should be used as
    *                               the option's values instead of the array's keys
    */
   public function options($_options, $selected = null, $valuesAsKeys = false)
   {
+    $options = array();
+
     // Automatically fetch Lang objects for people who store translated options lists
     if ($_options instanceof \Laravel\Lang) {
       $_options = $_options->get();
@@ -109,7 +137,11 @@ class Select extends Field
       foreach($_options as $v) $options[$v] = $v;
     } else $options = $_options;
 
-    $this->options = $options;
+    foreach ($options as $key => $option) {
+      $options[$key] = Element::create('option', $option)->setAttribute('value', $key);
+    }
+
+    $this->children = $options;
 
     if($selected) $this->value = $selected;
 
@@ -125,7 +157,7 @@ class Select extends Field
    */
   public function fromQuery($results, $value = null, $key = null)
   {
-    $this->options = Helpers::queryToArray($results, $value, $key);
+    $this->options(Helpers::queryToArray($results, $value, $key));
 
     return $this;
   }
@@ -165,6 +197,6 @@ class Select extends Field
    */
   public function getOptions()
   {
-    return $this->options;
+    return $this->children;
   }
 }

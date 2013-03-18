@@ -1,55 +1,89 @@
 <?php
-/**
- * Form
- *
- * Construct and manages the form wrapping all fields
- */
 namespace Former\Form;
 
+use Former\Former;
 use Former\Traits\FormerObject;
-use Underscore\Types\Arrays;
-use Underscore\Types\String;
+use Underscore\Methods\ArraysMethods as Arrays;
+use Underscore\Methods\StringMethods as String;
 
+/**
+ * Construct and manages the form wrapping all fields
+ */
 class Form extends FormerObject
 {
   /**
-   * The current environment
-   * @var Illuminate\Container
+   * The Former instance
+   *
+   * @var Former
    */
-  protected $app;
+  protected $former;
+
+  /**
+   * The Framework Interface
+   *
+   * @var FrameworkInterface
+   */
+  protected $framework;
+
+  /**
+   * The URL generator
+   *
+   * @var UrlGenerator
+   */
+  protected $url;
 
   /**
    * The Form type
+   *
    * @var string
    */
   protected $type = null;
 
   /**
    * The available form types
+   *
    * @var array
    */
   protected $availableTypes = array('horizontal', 'vertical', 'inline', 'search');
 
   /**
    * The destination of the current form
+   *
    * @var string
    */
   protected $action;
 
   /**
    * The form method
+   *
    * @var string
    */
   protected $method;
 
   /**
    * Whether the form should be secured or not
+   *
    * @var boolean
    */
   protected $secure;
 
   /**
+   * The form element
+   *
+   * @var string
+   */
+  protected $element = 'form';
+
+  /**
+   * A list of injected properties
+   *
+   * @var array
+   */
+  protected $injectedProperties = array('method', 'action');
+
+  /**
    * Whether a form is opened or not
+   *
    * @var boolean
    */
   protected static $opened = false;
@@ -58,9 +92,11 @@ class Form extends FormerObject
   /////////////////////////// CORE METHODS ///////////////////////////
   ////////////////////////////////////////////////////////////////////
 
-  public function __construct($app)
+  public function __construct(Former $former, $url)
   {
-    $this->app = $app;
+    $this->former    = $former;
+    $this->framework = $former->getFramework();
+    $this->url       = $url;
   }
 
   /**
@@ -78,21 +114,26 @@ class Form extends FormerObject
     $secure     = Arrays::get($parameters, 3, false);
 
     // Fetch errors if asked for
-    if ($this->app['former']->getOption('fetch_errors')) {
-      $this->app['former']->withErrors();
+    if ($this->former->getOption('fetch_errors')) {
+      $this->former->withErrors();
     }
 
     // Open the form
-    $this->action     = $action;
+    $this->action($action);
     $this->attributes = $attributes;
-    $this->method     = $method;
+    $this->method     = strtoupper($method);
     $this->secure     = $secure;
 
     // Add any effect of the form type
     $this->type = $this->applyType($type);
 
+    // Add enctype
+    if (!array_key_exists('accept-charset', $attributes )) {
+      $this->attributes['accept-charset'] = 'utf-8';
+    }
+
     // Add supplementary classes
-    $this->attributes = $this->app['former']->getFramework()->addFormClasses($this->attributes, $this->type);
+    $this->addClass($this->former->getFramework()->getFormClasses($this->type));
 
     return $this;
   }
@@ -118,7 +159,7 @@ class Form extends FormerObject
    *
    * @return boolean
    */
-  public static function isOpened()
+  public static function hasInstanceOpened()
   {
     return static::$opened;
   }
@@ -134,7 +175,7 @@ class Form extends FormerObject
    */
   public function action($action)
   {
-    $this->action = $action;
+    $this->action = $action ? $this->url->to($action) : null;
 
     return $this;
   }
@@ -164,13 +205,11 @@ class Form extends FormerObject
   }
 
   /**
-   * Alias for $this->app['former']->withRules
-   *
-   * @param array $rules Rules
+   * Alias for $this->former->withRules
    */
   public function rules()
   {
-    call_user_func_array(array($this->app['former'], 'withRules'), func_get_args());
+    call_user_func_array(array($this->former, 'withRules'), func_get_args());
 
     return $this;
   }
@@ -188,7 +227,13 @@ class Form extends FormerObject
     // Add name to attributes
     $this->attributes['name'] = $this->name;
 
-    return $this->app['meido.form']->open($this->action, $this->method, $this->attributes, $this->secure);
+    // Add spoof method
+    if ($this->method == 'PUT' or $this->method == 'DELETE') {
+      $spoof = $this->former->hidden('_method', $this->method);
+      $this->method = 'POST';
+    } else $spoof = null;
+
+    return $this->open().$spoof;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -205,7 +250,7 @@ class Form extends FormerObject
   {
     // If classic form
     if ($type == 'open') {
-      return $this->app['former']->getOption('default_form_type');
+      return $this->former->getOption('default_form_type');
     }
 
     // Look for HTTPS form
@@ -226,7 +271,7 @@ class Form extends FormerObject
 
     // Use default form type if the one provided is invalid
     if (!in_array($type, $this->availableTypes)) {
-      $type = $this->app['former']->getOption('default_form_type');
+      $type = $this->former->getOption('default_form_type');
     }
 
     return $type;

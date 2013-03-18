@@ -1,55 +1,38 @@
 <?php
-/**
- * Helpers
- *
- * Various helpers used by all Former classes
- */
 namespace Former;
 
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Translation\Translator;
-use Underscore\Types\String;
+use Underscore\Methods\StringMethods as String;
 
+/**
+ * Various helpers used by all Former classes
+ */
 class Helpers
 {
   /**
-   * Instance of the container
-   * @var Container
+   * Instance of Former
+   *
+   * @var Former
    */
-  private static $app;
+  private static $former;
+
+  /**
+   * The Translator instance
+   *
+   * @var Translator
+   */
+  private static $translator;
 
   /**
    * Bind a Container to the Helpers class
    *
    * @param Container $app
    */
-  public static function setApp(Container $app)
+  public static function setApp(Former $former, $translator)
   {
-    static::$app = $app;
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  /////////////////////////// HTML HELPERS ///////////////////////////
-  ////////////////////////////////////////////////////////////////////
-
-  /**
-   * Add a class to an attributes array
-   *
-   * @param  array  $attributes An array of attributes
-   * @param  string $class      The class to add
-   * @return array              The modified attributes array
-   */
-  public static function addClass($attributes, $class)
-  {
-    if (!isset($attributes['class'])) $attributes['class'] = null;
-
-    // Prevent adding a class twice
-    if (!String::contains($attributes['class'], $class)) {
-      $attributes['class'] = trim($attributes['class']. ' ' .$class);
-    }
-
-    return $attributes;
+    static::$former     = $former;
+    static::$translator = $translator;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -74,15 +57,14 @@ class Helpers
     // Assure we don't already have a Lang object
     if(is_object($key) and method_exists($key, 'get')) return $key->get();
 
-    $translator    = static::$app['translator'];
     $translation   = null;
-    $translateFrom = static::$app['former']->getOption('translate_from').'.'.$key;
+    $translateFrom = static::$former->getOption('translate_from').'.'.$key;
 
     // Search for the key itself
-    if ($translator->has($key)) {
-      $translation = $translator->get($key);
-    } elseif ($translator->has($translateFrom)) {
-      $translation  = $translator->get($translateFrom);
+    if (static::$translator->has($key)) {
+      $translation = static::$translator->get($key);
+    } elseif (static::$translator->has($translateFrom)) {
+      $translation  = static::$translator->get($translateFrom);
     }
 
     // Replace by fallback if invalid
@@ -100,10 +82,10 @@ class Helpers
   /**
    * Transforms an array of models into an associative array
    *
-   * @param  object $query The array of results
-   * @param  string $value The attribute to use as value
-   * @param  string $key   The attribute to use as key
-   * @return array         A data array
+   * @param  array|object $query The array of results
+   * @param  string       $value The attribute to use as value
+   * @param  string       $key   The attribute to use as key
+   * @return array               A data array
    */
   public static function queryToArray($query, $value = null, $key = null)
   {

@@ -19,6 +19,14 @@ class SelectTest extends FormerTests
     $this->assertEquals($matcher, $select);
   }
 
+  public function testMultiselectOptions()
+  {
+    $select = $this->former->multiselect('foo')->options($this->options)->value(array('foo', 'kal'))->__toString();
+    $matcher = $this->controlGroup('<select id="foo" multiple="true" name="foo[]"><option value="foo" selected="selected">bar</option><option value="kal" selected="selected">ter</option></select>');
+    $this->assertEquals($matcher, $select);
+  }
+
+
   public function testSelectOptions()
   {
     $select = $this->former->select('foo')->options($this->options)->__toString();
@@ -31,7 +39,11 @@ class SelectTest extends FormerTests
   {
     $select = $this->former->select('foo')->options($this->options);
 
-    $this->assertEquals($select->getOptions(), $this->options);
+    foreach ($this->options as $key => $option) {
+      $options[$key] = HtmlObject\Element::create('option', $option, array('value' => $key));
+    }
+
+    $this->assertEquals($select->getOptions(), $options);
   }
 
   public function testSelectPlaceholder()
@@ -39,7 +51,7 @@ class SelectTest extends FormerTests
     $select = $this->former->select('foo')->options($this->options)->placeholder('Pick something')->__toString();
     $matcher = $this->controlGroup(
       '<select id="foo" name="foo">'.
-        '<option value="" disabled="" selected="">Pick something</option>'.
+        '<option value="" disabled="disabled" selected="selected">Pick something</option>'.
         '<option value="foo">bar</option>'.
         '<option value="kal">ter</option>'.
       '</select>');
@@ -52,7 +64,7 @@ class SelectTest extends FormerTests
     $select = $this->former->select('foo')->value('foo')->options($this->options)->placeholder('Pick something')->__toString();
     $matcher = $this->controlGroup(
       '<select id="foo" name="foo">'.
-        '<option value="" disabled="">Pick something</option>'.
+        '<option value="" disabled="disabled">Pick something</option>'.
         '<option value="foo" selected="selected">bar</option>'.
         '<option value="kal">ter</option>'.
       '</select>');

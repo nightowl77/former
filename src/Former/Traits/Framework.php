@@ -1,18 +1,21 @@
 <?php
-/**
- * Framework
- *
- * Base helpers and common methods to all frameworks
- */
 namespace Former\Traits;
 
-use Former\Helpers;
 use Former\Traits\Field;
-use Underscore\Types\Arrays;
-use Underscore\Types\String;
+use HtmlObject\Element;
+use Underscore\Methods\ArraysMethods as Arrays;
 
+/**
+ * Base helpers and common methods to all frameworks
+ */
 abstract class Framework
 {
+  /**
+   * The Container
+   *
+   * @var Container
+   */
+  protected $app;
 
   ////////////////////////////////////////////////////////////////////
   //////////////////////// CURRENT FRAMEWORK /////////////////////////
@@ -87,22 +90,6 @@ abstract class Framework
   }
 
   /**
-   * Alias for former.helpers.addClass
-   */
-  protected function addClass($attributes, $class)
-  {
-    return Helpers::addClass($attributes, $class);
-  }
-
-  /**
-   * Alias for former.helpers.attributes
-   */
-  protected function attributes($attributes)
-  {
-    return $this->app['meido.html']->attributes($attributes);
-  }
-
-  /**
    * Create a label for a field
    *
    * @param Field  $field
@@ -110,17 +97,14 @@ abstract class Framework
    *
    * @return string A label
    */
-  public function createLabelOf(Field $field, $label = null)
+  public function createLabelOf(Field $field, Element $label = null)
   {
     // Get the label and its informations
     if (!$label) $label = $field->getLabel();
 
     // Get label text
-    $text = Arrays::get($label, 'text');
+    $text = $label->getValue();
     if (!$text) return false;
-
-    // Format attributes
-    $attributes = Arrays::get($label, 'attributes', array());
 
     // Append required text
     if ($field->isRequired()) {
@@ -128,12 +112,8 @@ abstract class Framework
     }
 
     // Render plain label if checkable, else a classic one
-    if ($field->isCheckable()) {
-      $label = '<label'.$this->app['meido.html']->attributes($attributes).'>'.$text.'</label>';
-    } else {
-      $label = $this->app['meido.form']->label($field->getName(), $text, $attributes);
-    }
-
-    return $this->app['meido.html']->decode($label);
+    $label->setValue($text);
+    if (!$field->isCheckable()) $label->for($field->getName());
+    return $label;
   }
 }

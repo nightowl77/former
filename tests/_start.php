@@ -9,7 +9,9 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
 {
   protected static $illuminate;
 
-  // Dummy data ---------------------------------------------------- /
+  ////////////////////////////////////////////////////////////////////
+  ////////////////////////////// DUMMIES /////////////////////////////
+  ////////////////////////////////////////////////////////////////////
 
   protected $checkables = array(
     'Foo' => array(
@@ -30,7 +32,9 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
     'data-foo' => 'bar',
   );
 
-  // Matchers ------------------------------------------------------ /
+  ////////////////////////////////////////////////////////////////////
+  ///////////////////////////// MATCHERS /////////////////////////////
+  ////////////////////////////////////////////////////////////////////
 
   protected function matchField($attributes = array(), $type = 'text', $name = 'foo')
   {
@@ -43,7 +47,7 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
     );
   }
 
-  protected function matchLabel($name = 'foo', $required = false)
+  protected function matchLabel($name = 'foo', $field = 'foo', $required = false)
   {
     $text = str_replace('[]', null, ucfirst($name));
     if ($required) $text .= '*';
@@ -52,7 +56,7 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
       'tag' => 'label',
       'content' => $text,
       'attributes' => array(
-        'for'   => $name,
+        'for'   => $field,
         'class' => 'control-label',
       ),
     );
@@ -68,6 +72,36 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
       'child' => array(
         'tag' => 'div',
         'attributes' => array('class' => 'controls'),
+      ),
+    );
+  }
+
+  protected function matchButton($class, $text, $attributes = array())
+  {
+    $matcher = array(
+      'tag'        => 'button',
+      'content'    => $text,
+      'attributes' => array(
+        'class' => $class,
+      ),
+    );
+
+    // Supplementary attributes
+    if ($attributes) {
+      $matcher['attributes'] = array_merge($matcher['attributes'], $attributes);
+    }
+
+    return $matcher;
+  }
+
+  protected function matchInputButton($class, $text, $type = 'submit')
+  {
+    return array(
+      'tag'        => 'input',
+      'attributes' => array(
+        'type'  => $type,
+        'value' => $text,
+        'class' => $class,
       ),
     );
   }
@@ -102,10 +136,42 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
 
   public function resetLabels()
   {
-    $this->app->app['meido.form']->labels = array();
+    $this->former->labels = array();
   }
 
-  // Custom assertions --------------------------------------------- /
+  ////////////////////////////////////////////////////////////////////
+  ////////////////////////////// HELPERS /////////////////////////////
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Build a list of HTML attributes from an array
+   *
+   * @param  array  $attributes
+   * @return string
+   */
+  public function attributes($attributes)
+  {
+    $html = array();
+
+    foreach ((array) $attributes as $key => $value)
+    {
+      // For numeric keys, we will assume that the key and the value are the
+      // same, as this will convert HTML attributes such as "required" that
+      // may be specified as required="required", etc.
+      if (is_numeric($key)) $key = $value;
+
+      if ( ! is_null($value))
+      {
+        $html[] = $key.'="'.$value.'"';
+      }
+    }
+
+    return (count($html) > 0) ? ' '.implode(' ', $html) : '';
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  ////////////////////////////// ASSERTIONS //////////////////////////
+  ////////////////////////////////////////////////////////////////////
 
   protected function assertControlGroup($input)
   {
@@ -115,10 +181,10 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
 
   protected function assertLabel($input, $name = 'foo', $required = false)
   {
-    $this->assertHTML($this->matchLabel($name, $required), $input);
+    $this->assertHTML($this->matchLabel($name, $name, $required), $input);
   }
 
-  protected function controlGroup($input = '<input type="text" name="foo" id="foo" />', $label = '<label for="foo" class="control-label">Foo</label>')
+  protected function controlGroup($input = '<input type="text" name="foo" id="foo">', $label = '<label for="foo" class="control-label">Foo</label>')
   {
     return '<div class="control-group">'.$label.'<div class="controls">'.$input.'</div></div>';
   }
@@ -128,7 +194,7 @@ abstract class FormerTests extends PHPUnit_Framework_TestCase
     return '<div class="control-group required">'.$label.'<div class="controls">'.$input.'</div></div>';
   }
 
-  protected function controlGroupMultiple($input, $label = '<label class="control-label">Foo</label>')
+  protected function controlGroupMultiple($input, $label = '<label for="foo" class="control-label">Foo</label>')
   {
     return '<div class="control-group">'.$label.'<div class="controls">'.$input.'</div></div>';
   }

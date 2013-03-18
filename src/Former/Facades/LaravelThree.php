@@ -1,13 +1,12 @@
 <?php
-/**
- * Legacy
- *
- * Makes Former Laravel 3 compatible
- */
 namespace Former\Facades;
 
+use Illuminate\Container\Container;
 use Laravel\Config;
 
+/**
+ * Makes Former Laravel 3 compatible
+ */
 class LaravelThree extends FormerBuilder
 {
   /**
@@ -17,7 +16,7 @@ class LaravelThree extends FormerBuilder
    */
   protected static function getApp()
   {
-    $app = static::buildContainer();
+    $app = new Container;
 
     // Laravel ----------------------------------------------------- /
 
@@ -39,13 +38,6 @@ class LaravelThree extends FormerBuilder
 
     $app->bind('translator', function($app) {
       return new Legacy\Translator;
-    });
-
-    $app->bind('meido.html', function() {
-      return new Legacy\Redirector('HTML');
-    });
-    $app->bind('meido.form', function() {
-      return new Legacy\Redirector('Form');
     });
 
     // Former ------------------------------------------------------ /

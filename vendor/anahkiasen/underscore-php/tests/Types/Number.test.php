@@ -1,9 +1,13 @@
 <?php
 use Underscore\Types\Number;
-use Underscore\Underscore;
 
 class NumberTest extends UnderscoreWrapper
 {
+  public function testCanCreateNewNumber()
+  {
+    $this->assertEquals(0, Number::create()->obtain());
+  }
+
   public function testCanAccessStrPad()
   {
     $number = Number::pad(5, 3, 1, STR_PAD_BOTH);

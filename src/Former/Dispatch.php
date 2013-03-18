@@ -1,40 +1,47 @@
 <?php
-/**
- * Dispatch
- *
- * Dispatch calls to Former to the different
- * form creators like Form, Actions, Elements and others
- */
 namespace Former;
 
-use Underscore\Types\Arrays;
+use Illuminate\Container\Container;
+use Underscore\Methods\ArraysMethods as Arrays;
 use Underscore\Types\String;
 
+/**
+ * Dispatch calls from Former to the different
+ * form creators like Form, Actions, Elements and others
+ */
 class Dispatch
 {
   /**
    * Dispatch a call over to Elements
    *
+   * @param Container $app        The application container
+   * @param string    $method     The method called
+   * @param array     $parameters Its parameters
+   *
    * @return string
    */
-  public static function toElements($app, $method, $parameters)
+  public static function toElements(Container $app, $method, $parameters)
   {
     // Disregards if the method isn't an element
-    if (!method_exists($elements = new Form\Elements($app), $method)) return false;
+    if (!method_exists($elements = new Form\Elements($app['former'], $app['session']), $method)) return false;
     return call_user_func_array(array($elements, $method), $parameters);
   }
 
   /**
    * Dispatch a call over to Form
    *
+   * @param Former  $app        The application container
+   * @param string  $method     The method called
+   * @param array   $parameters Its parameters
+   *
    * @return Form
    */
-  public static function toForm($app, $method, $parameters)
+  public static function toForm(Former $former, $method, $parameters)
   {
     // Disregards if the method doesn't contain 'open'
     if (!String::contains($method, 'open')) return false;
 
-    $form = new Form\Form($app);
+    $form = new Form\Form($former, $former->getContainer('url'));
 
     return $form->openForm($method, $parameters);
   }
@@ -42,15 +49,19 @@ class Dispatch
   /**
    * Dispatch a call over to Group
    *
+   * @param Former    $app        The application container
+   * @param string    $method     The method called
+   * @param array     $parameters Its parameters
+   *
    * @return Group
    */
-  public static function toGroup($app, $method, $parameters)
+  public static function toGroup(Former $former, $method, $parameters)
   {
     // Disregards if the method isn't "group"
     if ($method != 'group') return false;
     return new Form\Group(
-      $app,
-      Arrays::get($parameters, 0),
+      $former,
+      Arrays::get($parameters, 0, null),
       Arrays::get($parameters, 1, array())
     );
   }
@@ -58,25 +69,33 @@ class Dispatch
   /**
    * Dispatch a call over to Actions
    *
+   * @param Former    $app        The application container
+   * @param string    $method     The method called
+   * @param array     $parameters Its parameters
+   *
    * @return Actions
    */
-  public static function toActions($app, $method, $parameters)
+  public static function toActions(Former $former, $method, $parameters)
   {
     if ($method != 'actions') return false;
-    return new Form\Actions($app, $parameters);
+    return new Form\Actions($former, $parameters);
   }
 
   /**
    * Dispatch a call over to the Fields
    *
+   * @param Former    $app        The application container
+   * @param string    $method     The method called
+   * @param array     $parameters Its parameters
+   *
    * @return Field
    */
-  public static function toFields($app, $method, $parameters)
+  public static function toFields(Former $former, $method, $parameters)
   {
     // Listing parameters
     $class = Former::FIELDSPACE.static::getClassFromMethod($method);
     $field = new $class(
-      $app,
+      $former,
       $method,
       Arrays::get($parameters, 0),
       Arrays::get($parameters, 1),
@@ -97,9 +116,10 @@ class Dispatch
    * Get the correct class to call according to the created field
    *
    * @param  string $method The field created
+   *
    * @return string The correct class
    */
-  private static function getClassFromMethod($method)
+  protected static function getClassFromMethod($method)
   {
     // If the field's name directly match a class, call it
     $class = String::from($method)->singular()->title()->obtain();

@@ -1,17 +1,17 @@
 <?php
-/**
- * ZurbFoundation
- *
- * The Zurb Foundation form framework
- */
 namespace Former\Framework;
 
-use Illuminate\Container\Container;
 use Former\Interfaces\FrameworkInterface;
 use Former\Traits\Field;
 use Former\Traits\Framework;
-use Underscore\Types\Arrays;
+use HtmlObject\Element;
+use HtmlObject\Input;
+use Illuminate\Container\Container;
+use Underscore\Methods\ArraysMethods as Arrays;
 
+/**
+ * The Zurb Foundation form framework
+ */
 class ZurbFoundation extends Framework implements FrameworkInterface
 {
 
@@ -54,7 +54,7 @@ class ZurbFoundation extends Framework implements FrameworkInterface
   public function filterFieldClasses($classes)
   {
     // Filter classes
-    $classes = Arrays::intersect($classes, $this->fields);
+    $classes = array_intersect($classes, $this->fields);
 
     return $classes;
   }
@@ -63,41 +63,41 @@ class ZurbFoundation extends Framework implements FrameworkInterface
   ///////////////////////////// ADD CLASSES //////////////////////////
   ////////////////////////////////////////////////////////////////////
 
-  public function addFieldClasses(Field $field, $classes = array())
+  public function getFieldClasses(Field $field, $classes = array())
   {
     $classes = $this->filterFieldClasses($classes);
 
     // If we found any class, add them
     if ($classes) {
-      $field->setAttribute('class', implode(' ', $classes));
+      $field->class(implode(' ', $classes));
     }
 
     return $field;
   }
 
-  public function addGroupClasses($attributes)
+  public function getGroupClasses()
   {
-    return $attributes;
+    return null;
   }
 
-  public function addLabelClasses($attributes)
+  public function getLabelClasses()
   {
-    return $attributes;
+    return null;
   }
 
-  public function addUneditableClasses($attributes)
+  public function getUneditableClasses()
   {
-    return $attributes;
+    return null;
   }
 
-  public function addFormClasses($attributes)
+  public function getFormClasses($type)
   {
-    return $attributes;
+    return null;
   }
 
-  public function addActionClasses($attributes)
+  public function getActionClasses()
   {
-    return $attributes;
+    return null;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ class ZurbFoundation extends Framework implements FrameworkInterface
 
   public function createHelp($text, $attributes)
   {
-    return '<small'.$this->attributes($attributes).'>'.$text.'</small>';
+    return Element::create('small', $text, $attributes);
   }
 
   public function createIcon($icon, $attributes)
@@ -125,7 +125,7 @@ class ZurbFoundation extends Framework implements FrameworkInterface
   {
     $field->disabled();
 
-    return $this->app['meido.form']->input('text', $field->getName(), $field->getValue(), $field->getAttributes());
+    return Input::create('text', $field->getName(), $field->getValue(), $field->getAttributes());
   }
 
   ////////////////////////////////////////////////////////////////////

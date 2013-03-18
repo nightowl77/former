@@ -70,6 +70,15 @@ class TagTest extends HtmlObjectTests
     $this->assertHTML($matcher, $this->object);
   }
 
+  public function testCanDynamicallyGetChild()
+  {
+    $two  = Element::p('foo');
+    $one  = Element::div()->setChild($two, 'two');
+    $zero = Element::div()->setChild($one, 'one');
+
+    $this->assertEquals('foo', $zero->oneTwo->getValue());
+  }
+
   public function testCanReplaceAttributes()
   {
     $this->object->setAttribute('data-foo', 'bar');
@@ -140,6 +149,15 @@ class TagTest extends HtmlObjectTests
     $this->assertEquals('<p class="alert-success alert">foo</p>', $this->object->render());
   }
 
+  public function testCanRemoveClasses()
+  {
+    $this->object->addClass('foo');
+    $this->object->addClass('bar');
+    $this->object->removeClass('foo');
+
+    $this->assertEquals('<p class="bar">foo</p>', $this->object->render());
+  }
+
   public function testCanManuallyOpenElement()
   {
     $element = $this->object->open().'foobar'.$this->object->close();
@@ -159,5 +177,38 @@ class TagTest extends HtmlObjectTests
     $object = $this->object->wrapWith('div');
 
     $this->assertEquals('<div><p>foo</p></div>', $object->render());
+  }
+
+  public function testCanManuallyOpenComplexStructures()
+  {
+    $object = Element::div(array(
+      'title'  => Element::div('foo')->class('title'),
+      'body'   => Element::div()->class('body'),
+      'footer' => Element::div('footer'),
+    ));
+    $object = $object->openOn('body').'CONTENT'.$object->close();
+
+    $this->assertEquals('<div><div class="title">foo</div><div class="body">CONTENT</div><div>footer</div></div>', $object);
+  }
+
+  public function testCanManipulateComplexStructures()
+  {
+    $object = Element::div(array(
+      'title' => Element::div('foo')->class('title'),
+      'body'  => Element::div()->class('body'),
+    ));
+
+    $wrapper = HtmlObject\Link::create('#', '');
+    $object = $object->wrapWith($wrapper, 'complex');
+    $render = $object->openOn('complex.body').'foo'.$object->close();
+
+    $this->assertEquals('<a href="#"><div><div class="title">foo</div><div class="body">foo</div></div></a>', $render);
+  }
+
+  public function testCanCheckIfTagIsOpened()
+  {
+    $this->object->open();
+
+    $this->assertTrue($this->object->isOpened());
   }
 }

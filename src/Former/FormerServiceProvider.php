@@ -1,13 +1,11 @@
 <?php
-/**
- * FormerServiceProvider
- *
- * Register the Former package with the Laravel framework
- */
 namespace Former;
 
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Register the Former package with the Laravel framework
+ */
 class FormerServiceProvider extends ServiceProvider
 {
   public function register()
@@ -15,7 +13,6 @@ class FormerServiceProvider extends ServiceProvider
     // Register config file
     $this->app['config']->package('anahkiasen/former', __DIR__.'/../config');
 
-    $this->app = Facades\Agnostic::buildMeido($this->app);
     $this->app = Facades\Agnostic::buildFramework($this->app, 'former::');
     $this->app = Facades\Agnostic::buildFormer($this->app);
   }

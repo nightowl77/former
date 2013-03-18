@@ -1,22 +1,21 @@
 <?php
-/**
- * Underscore
- *
- * The base class and wrapper around all other classes
- */
 namespace Underscore;
 
 use Underscore\Traits\Repository;
 use Underscore\Methods\ArraysMethods;
 
+/**
+ * The base class and wrapper around all other classes
+ */
 class Underscore extends Repository
 {
 
   /**
    * The current config
+   *
    * @var array
    */
-  private static $options;
+  protected static $options;
 
   ////////////////////////////////////////////////////////////////////
   //////////////////////////// INTERFACE /////////////////////////////
