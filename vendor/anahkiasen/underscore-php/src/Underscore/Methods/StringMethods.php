@@ -1,14 +1,12 @@
 <?php
-/**
- * StringMethods
- *
- * Methods to manage strings
- */
 namespace Underscore\Methods;
 
 use Illuminate\Support\Str;
 use Underscore\Types\String;
 
+/**
+ * Methods to manage strings
+ */
 class StringMethods extends Str
 {
   ////////////////////////////////////////////////////////////////////
@@ -65,6 +63,36 @@ class StringMethods extends Str
   public static function length($string)
   {
     return mb_strlen($string);
+  }
+
+  /**
+   * Check if a string is an IP
+   *
+   * @return boolean
+   */
+  public static function isIp($string)
+  {
+    return filter_var($string, FILTER_VALIDATE_IP) !== false;
+  }
+
+  /**
+   * Check if a string is an email
+   *
+   * @return boolean
+   */
+  public static function isEmail($string)
+  {
+    return filter_var($string, FILTER_VALIDATE_EMAIL) !== false;
+  }
+
+  /**
+   * Check if a string is an url
+   *
+   * @return boolean
+   */
+  public static function isUrl($string)
+  {
+    return filter_var($string, FILTER_VALIDATE_URL) !== false;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -149,6 +177,32 @@ class StringMethods extends Str
   ////////////////////////////////////////////////////////////////////
 
   /**
+   * Prepend a string with another
+   *
+   * @param string $string The string
+   * @param string $with   What to prepend with
+   *
+   * @return string
+   */
+  public static function prepend($string, $with)
+  {
+    return $with.$string;
+  }
+
+  /**
+   * Append a string to another
+   *
+   * @param string $string The string
+   * @param string $with   What to append with
+   *
+   * @return string
+   */
+  public static function append($string, $with)
+  {
+    return $string.$with;
+  }
+
+  /**
    * Remove part of a string
    */
   public static function remove($string, $remove)
@@ -195,7 +249,7 @@ class StringMethods extends Str
    */
   public static function slugify($string, $separator = '-')
   {
-    $string = preg_replace('/[_]/', ' ', $string);
+    $string = str_replace('_', ' ', $string);
 
     return static::slug($string, $separator);
   }

@@ -106,6 +106,35 @@ if ( ! function_exists('array_except'))
 	}
 }
 
+if ( ! function_exists('array_fetch'))
+{
+	/**
+	 * Fetch a flattened array of a nested array element.
+	 *
+	 * @param  array   $array
+	 * @param  string  $key
+	 * @return array
+	 */
+	function array_fetch($array, $key)
+	{
+		foreach (explode('.', $key) as $segment)
+		{
+			$results = array();
+
+			foreach ($array as $value)
+			{
+				$value = (array) $value;
+
+				$results[] = $value[$segment];
+			}
+
+			$array = array_values($results);
+		}
+
+		return array_values($results);
+	}
+}
+
 if ( ! function_exists('array_first'))
 {
 	/**
@@ -124,6 +153,24 @@ if ( ! function_exists('array_first'))
 		}
 
 		return value($default);
+	}
+}
+
+if ( ! function_exists('array_flatten'))
+{
+	/**
+	 * Flatten a multi-dimensional array into a single level.
+	 *
+	 * @param  array  $array
+	 * @return array
+	 */
+	function array_flatten($array)
+	{
+		$return = array();
+
+		array_walk_recursive($array, function($x) use (&$return) { $return[] = $x; });
+
+		return $return;
 	}
 }
 
@@ -169,6 +216,8 @@ if ( ! function_exists('array_get'))
 	function array_get($array, $key, $default = null)
 	{
 		if (is_null($key)) return $array;
+		
+		if (isset($array[$key])) return $array[$key];
 
 		foreach (explode('.', $key) as $segment)
 		{
@@ -380,6 +429,96 @@ if ( ! function_exists('head'))
 	}
 }
 
+if ( ! function_exists('link_to'))
+{
+	/**
+	 * Generate a HTML link.
+	 *
+	 * @param  string  $url
+	 * @param  string  $title
+	 * @param  array   $attributes
+	 * @param  bool    $secure
+	 * @return string
+	 */
+	function link_to($url, $title = null, $attributes = array(), $secure = null)
+	{
+		$app = app();
+
+		return $app['html']->link($url, $title, $attributes, $secure);
+	}
+}
+
+if ( ! function_exists('last'))
+{
+	/**
+	 * Get the last element from an array.
+	 *
+	 * @param  array  $array
+	 * @return mixed
+	 */
+	function last($array)
+	{
+		return end($array);
+	}
+}
+
+if ( ! function_exists('link_to_asset'))
+{
+	/**
+	 * Generate a HTML link to an asset.
+	 *
+	 * @param  string  $url
+	 * @param  string  $title
+	 * @param  array   $attributes
+	 * @param  bool    $secure
+	 * @return string
+	 */
+	function link_to_asset($url, $title = null, $attributes = array(), $secure = null)
+	{
+		$app = app();
+
+		return $app['html']->linkAsset($url, $title, $attributes, $secure);
+	}
+}
+
+if ( ! function_exists('link_to_route'))
+{
+	/**
+	 * Generate a HTML link to a named route.
+	 *
+	 * @param  string  $name
+	 * @param  string  $title
+	 * @param  array   $parameters
+	 * @param  array   $attributes
+	 * @return string
+	 */
+	function link_to_route($name, $title = null, $parameters = array(), $attributes = array())
+	{
+		$app = app();
+
+		return $app['html']->linkRoute($name, $title, $parameters, $attributes);
+	}
+}
+
+if ( ! function_exists('link_to_action'))
+{
+	/**
+	 * Generate a HTML link to a controller action.
+	 *
+	 * @param  string  $action
+	 * @param  string  $title
+	 * @param  array   $parameters
+	 * @param  array   $attributes
+	 * @return string
+	 */
+	function link_to_action($action, $title = null, $parameters = array(), $attributes = array())
+	{
+		$app = app();
+
+		return $app['html']->linkAction($action, $title, $parameters, $attributes);
+	}
+}
+
 if ( ! function_exists('public_path'))
 {
 	/**
@@ -467,6 +606,19 @@ if ( ! function_exists('starts_with'))
 	function starts_with($haystack, $needles)
 	{
 		return Illuminate\Support\Str::startsWith($haystack, $needles);
+	}
+}
+
+if ( ! function_exists('storage_path'))
+{
+	/**
+	 * Get the path to the storage folder.
+	 *
+	 * @return  string
+	 */
+	function storage_path()
+	{
+		return app('path.storage');
 	}
 }
 

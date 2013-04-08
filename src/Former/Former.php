@@ -13,42 +13,49 @@ class Former
 {
   /**
    * The current environment
+   *
    * @var Illuminate\Container
    */
   protected $app;
 
   /**
    * The current field being worked on
+   *
    * @var Field
    */
   protected $field;
 
   /**
    * The current form framework
+   *
    * @var FrameworkInterface
    */
   protected $formFramework;
 
   /**
    * The current form being worked on
+   *
    * @var Form
    */
   protected $form;
 
   /**
    * The Populator instance
+   *
    * @var Populator
    */
   public $populator;
 
   /**
    * The form's errors
+   *
    * @var Message
    */
   protected $errors;
 
   /**
    * An array of rules to use
+   *
    * @var array
    */
   protected $rules = array();
@@ -178,6 +185,16 @@ class Former
     return $this->app['request']->get($name, $oldValue);
   }
 
+  /**
+   * Get the Populator binded to Former
+   *
+   * @return Populator
+   */
+  public function getPopulator()
+  {
+    return $this->populator;
+  }
+
   ////////////////////////////////////////////////////////////////////
   ////////////////////////////// TOOLKIT /////////////////////////////
   ////////////////////////////////////////////////////////////////////
@@ -194,10 +211,11 @@ class Former
 
     // If we're given a raw Validator, go fetch the errors in it
     if(method_exists($validator, 'getMessages')) $errors = $validator->getMessages();
+    if($validator instanceof \Laravel\Validator) $errors = $validator->errors;
 
     // If we found errors, bind them to the form
     if(isset($errors)) $this->errors = $errors;
-    else $this->errors = $validator;
+    elseif($validator) $this->errors = $validator;
   }
 
   /**

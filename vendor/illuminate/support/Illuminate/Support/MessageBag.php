@@ -19,7 +19,7 @@ class MessageBag implements ArrayableInterface, Countable, JsonableInterface, Me
 	 *
 	 * @var string
 	 */
-	protected $format = '<span class="help-inline">:message</span>';
+	protected $format = ':message';
 
 	/**
 	 * Create a new message bag instance.
@@ -40,7 +40,7 @@ class MessageBag implements ArrayableInterface, Countable, JsonableInterface, Me
 	 *
 	 * @param  string  $key
 	 * @param  string  $message
-	 * @return void
+	 * @return \Illuminate\Support\MessageBag
 	 */
 	public function add($key, $message)
 	{
@@ -48,17 +48,21 @@ class MessageBag implements ArrayableInterface, Countable, JsonableInterface, Me
 		{
 			$this->messages[$key][] = $message;
 		}
+
+		return $this;
 	}
 
 	/**
 	 * Merge a new array of messages into the bag.
 	 *
 	 * @param  array  $messages
-	 * @return void
+	 * @return \Illuminate\Support\MessageBag
 	 */
 	public function merge(array $messages)
 	{
 		$this->messages = array_merge_recursive($this->messages, $messages);
+
+		return $this;
 	}
 
 	/**
@@ -191,7 +195,7 @@ class MessageBag implements ArrayableInterface, Countable, JsonableInterface, Me
 	/**
 	 * Get the messages for the instance.
 	 *
-	 * @return ILluminate\Support\MessageBag
+	 * @return \Illuminate\Support\MessageBag
 	 */
 	public function getMessageBag()
 	{
