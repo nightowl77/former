@@ -42,6 +42,17 @@ class TreeObjectTest extends HtmlObjectTests
     $this->assertEquals('<p>foo<strong>foo<a>foo</a></strong></p>', $this->object->render());
   }
 
+  public function testCanNestStringsInChildren()
+  {
+    $strong = Element::strong('title');
+    $title  = Element::h1('bar')->nest($strong, 'strong');
+    $object = Element::div()->nest($title, 'title');
+    $this->object->nest($object, 'body');
+    $this->object->nest('by <a>someone</a>', 'body.title');
+
+    $this->assertEquals('<p>foo<div><h1>bar<strong>title</strong>by <a>someone</a></h1></div></p>', $this->object->render());
+  }
+
   public function testCanGetNestedElements()
   {
     $object = Element::strong('foo');
@@ -170,5 +181,14 @@ class TreeObjectTest extends HtmlObjectTests
 
     $this->assertTrue($last->isAfter('first'));
     $this->assertFalse($first->isAfter('last'));
+  }
+
+  public function testCanCheckIfElementHasChild()
+  {
+    $element = Element::create('div', 'foo');
+    $this->object->nest($element, 'body');
+
+    $this->assertTrue($this->object->hasChild('body'));
+    $this->assertFalse($this->object->hasChild('title'));
   }
 }
