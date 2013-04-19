@@ -2,7 +2,7 @@
 namespace Former;
 
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Underscore\Methods\StringMethods as String;
 
 /**
@@ -33,6 +33,18 @@ class Helpers
   {
     static::$former     = $former;
     static::$translator = $translator;
+  }
+
+  /**
+   * Encodes HTML
+   *
+   * @param string $value The string to encode
+   *
+   * @return string
+   */
+  public static function encode($value)
+  {
+    return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -91,8 +103,10 @@ class Helpers
   {
     // Automatically fetch Lang objects for people who store translated options lists
     // Same of unfetched queries
-    if (method_exists($query, 'get')) $query = $query->get();
-    if (!is_array($query) and !($query instanceof Collection)) $query = (array) $query;
+    if (!($query instanceof Collection)) {
+      if (method_exists($query, 'get')) $query = $query->get();
+      if (!is_array($query)) $query = (array) $query;
+    }
 
     // Populates the new options
     foreach ($query as $model) {
